@@ -69,11 +69,12 @@ auto get_max_lambda(const auto& u)
     return res;
 }
 
-// int main(int argc, char* argv[])
-int main()
+int main(int argc, char* argv[])
 {
     constexpr std::size_t dim = 1;
     using Config              = samurai::MRConfig<dim>;
+
+    auto& app = samurai::initialize("Euler equations solver", argc, argv);
 
     // Simulation parameters
     xt::xtensor_fixed<double, xt::xshape<dim>> min_corner = {0.};
@@ -83,14 +84,50 @@ int main()
     std::size_t min_level = 10;
     std::size_t max_level = 10;
 
+    double Tf  = .15;
+    double cfl = 0.45;
+    double t   = 0.;
+    std::string restart_file;
+    std::string scheme = "hll";
+
+    // Output parameters
+    fs::path path        = fs::current_path();
+    std::string filename = fmt::format("euler_{}d", dim);
+    std::size_t nfiles   = 1;
+
+    app.add_option("--min-corner", min_corner, "The min corner of the box")->capture_default_str()->group("Simulation parameters");
+    app.add_option("--max-corner", max_corner, "The max corner of the box")->capture_default_str()->group("Simulation parameters");
+    app.add_option("--cfl", cfl, "The CFL")->capture_default_str()->group("Simulation parameters");
+    app.add_option("--Ti", t, "Initial time")->capture_default_str()->group("Simulation parameters");
+    app.add_option("--Tf", Tf, "Final time")->capture_default_str()->group("Simulation parameters");
+    app.add_option("--scheme", scheme, "Finite volume scheme")
+        ->capture_default_str()
+        ->check(CLI::IsMember({"rusanov", "hll", "hllc"}))
+        ->group("Simulation parameters");
+    app.add_option("--restart-file", restart_file, "Restart file")->capture_default_str()->group("Simulation parameters");
+    app.add_option("--min-level", min_level, "Minimum level of the multiresolution")->capture_default_str()->group("Multiresolution");
+    app.add_option("--max-level", max_level, "Maximum level of the multiresolution")->capture_default_str()->group("Multiresolution");
+    app.add_option("--path", path, "Output path")->capture_default_str()->group("Output");
+    app.add_option("--filename", filename, "File name prefix")->capture_default_str()->group("Output");
+    app.add_option("--nfiles", nfiles, "Number of output files")->capture_default_str()->group("Output");
+
+    SAMURAI_PARSE(argc, argv);
+
     // Initialize the mesh
     const samurai::Box<double, dim> box(min_corner, max_corner);
 
     samurai::MRMesh<Config> mesh;
     auto u = samurai::make_vector_field<double, 2 + dim>("euler", mesh);
 
-    mesh = {box, min_level, max_level};
-    init(u);
+    if (restart_file.empty())
+    {
+        mesh = {box, min_level, max_level};
+        init(u);
+    }
+    else
+    {
+        samurai::load(restart_file, mesh, u);
+    }
 
     const xt::xtensor_fixed<int, xt::xshape<1>> left  = {-1};
     const xt::xtensor_fixed<int, xt::xshape<1>> right = {1};
@@ -98,20 +135,17 @@ int main()
     samurai::make_bc<samurai::Dirichlet<1>>(u, rhoL, rhoL * (EOS::e(rhoL, pL) + 0.5 * vL * vL), rhoL * vL)->on(left);
     samurai::make_bc<samurai::Dirichlet<1>>(u, rhoR, rhoR * (EOS::e(rhoR, pR) + 0.5 * vR * vR), rhoR * vR)->on(right);
 
-    auto hll     = make_euler_hll<decltype(u)>();
-    auto rusanov = make_euler_rusanov<decltype(u)>();
-    auto hllc    = make_euler_hllc<decltype(u)>();
-
     auto unp1 = samurai::make_vector_field<double, 2 + dim>("euler", mesh);
 
-    double Tf  = .15;
-    double cfl = 0.45;
-    double dx  = mesh.cell_length(max_level);
+    double dx            = mesh.cell_length(max_level);
+    const double dt_save = Tf / static_cast<double>(nfiles);
+    std::size_t nsave    = 1;
+    std::size_t nt       = 0;
 
-    double t       = 0.;
-    std::size_t nt = 0;
+    samurai::save(fmt::format("{}_{}_init", filename, scheme), mesh, u);
 
-    samurai::save("euler_hll_init", mesh, u);
+    std::cout << "Using scheme: " << scheme << std::endl;
+    auto fv_scheme = get_fv_scheme<decltype(u)>(scheme);
 
     while (t != Tf)
     {
@@ -133,9 +167,15 @@ int main()
         std::cout << fmt::format("iteration {}: t = {}, dt = {}", nt++, t, dt) << std::endl;
 
         samurai::update_ghost_mr(u);
-        unp1 = u - dt * hllc(u);
+        unp1 = u - dt * fv_scheme(u);
+
         std::swap(u.array(), unp1.array());
-        samurai::save(fmt::format("euler_hll_{}", nt), mesh, u);
+
+        if (t >= static_cast<double>(nsave + 1) * dt_save || t == Tf)
+        {
+            const std::string suffix = (nfiles != 1) ? fmt::format("_ite_{}", nsave++) : "";
+            samurai::save(fmt::format("{}_{}{}", filename, scheme, suffix), mesh, u);
+        }
     }
 
     samurai::finalize();
