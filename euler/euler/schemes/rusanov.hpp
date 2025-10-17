@@ -27,15 +27,15 @@ auto make_euler_rusanov()
                 static constexpr std::size_t left  = 0;
                 static constexpr std::size_t right = 1;
 
-                const auto& qL              = field[left];
-                auto [rhoL, vL, eL, pL, cL] = extract_primitive<dim>(qL);
+                const auto& qL = field[left];
+                auto primL     = cons2prim<dim>(qL);
 
-                const auto& qR              = field[right];
-                auto [rhoR, vR, eR, pR, cR] = extract_primitive<dim>(qR);
+                const auto& qR = field[right];
+                auto primR     = cons2prim<dim>(qR);
 
-                const auto lambda = std::max(std::abs(vL[d]) + cL, std::abs(vR[d]) + cR);
+                const auto lambda = std::max(std::abs(primL.v[d]) + primL.c, std::abs(primR.v[d]) + primR.c);
 
-                flux = 0.5 * (compute_flux<dim, d>(rhoL, vL, eL, pL) + compute_flux<dim, d>(rhoR, vR, eR, pR) - lambda * (qR - qL));
+                flux = 0.5 * (compute_flux<d>(primL) + compute_flux<d>(primR) - lambda * (qR - qL));
             };
         });
     auto scheme = make_flux_based_scheme(rusanov);

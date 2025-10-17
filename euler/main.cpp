@@ -24,14 +24,14 @@ void init(auto& u)
     u.resize();
     auto set_conserved = [](auto&& u, double rho, double p, double v)
     {
-        u[EulerVariable::rho] = rho;
-        double norm2          = 0.;
+        u[EulerConsVar::rho] = rho;
+        double norm2         = 0.;
         for (std::size_t d = 0; d < dim; ++d)
         {
-            u[EulerVariable::rhou + d] = rho * v;
+            u[EulerConsVar::rhou + d] = rho * v;
             norm2 += v * v;
         }
-        u[EulerVariable::rhoE] = rho * (EOS::e(rho, p) + 0.5 * norm2);
+        u[EulerConsVar::rhoE] = rho * (EOS::e(rho, p) + 0.5 * norm2);
     };
 
     samurai::for_each_cell(mesh,

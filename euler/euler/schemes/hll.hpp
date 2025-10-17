@@ -27,40 +27,27 @@ auto make_euler_hll()
                 static constexpr std::size_t left  = 0;
                 static constexpr std::size_t right = 1;
 
-                const auto& qL              = field[left];
-                auto [rhoL, vL, eL, pL, cL] = extract_primitive<dim>(qL);
+                const auto& qL = field[left];
+                auto primL     = cons2prim<dim>(qL);
 
-                const auto& qR              = field[right];
-                auto [rhoR, vR, eR, pR, cR] = extract_primitive<dim>(qR);
+                const auto& qR = field[right];
+                auto primR     = cons2prim<dim>(qR);
 
-                double sL = std::min(vL[d] - cL, vR[d] - cR);
-                double sR = std::max(vL[d] + cL, vR[d] + cR);
+                double sL = std::min(primL.v[d] - primL.c, primR.v[d] - primR.c);
+                double sR = std::max(primL.v[d] + primL.c, primR.v[d] + primR.c);
 
                 if (sL >= 0)
                 {
-                    flux = compute_flux<dim, d>(rhoL, vL, eL, pL);
+                    flux = compute_flux<d>(primL);
                 }
                 else if (sL < 0 && sR > 0)
                 {
-                    // std::cout << "sL = " << sL << ", sR = " << sR << std::endl;
-                    // std::cout << "left flux: " << compute_flux<dim, d>(rhoL, vL, eL, pL) << std::endl;
-                    // std::cout << "right flux: " << compute_flux<dim, d>(rhoR, vR, eR, pR) << std::endl;
-                    // std::cout << "qL: " << qL << std::endl;
-                    // std::cout << "qR: " << qR << std::endl;
-                    flux = (sR * compute_flux<dim, d>(rhoL, vL, eL, pL) - sL * compute_flux<dim, d>(rhoR, vR, eR, pR) + sL * sR * (qR - qL))
-                         / (sR - sL);
-                    // std::cout << "HLL Computed flux: " << flux << std::endl;
+                    flux = (sR * compute_flux<d>(primL) - sL * compute_flux<d>(primR) + sL * sR * (qR - qL)) / (sR - sL);
                 }
                 else if (sR <= 0)
                 {
-                    flux = compute_flux<dim, d>(rhoR, vR, eR, pR);
+                    flux = compute_flux<d>(primR);
                 }
-                // std::cout << "Left state: rho = " << rhoL << ", v = " << vL[d] << ", p = " << pL << ", e = " << eL << ", c = " << cL
-                //           << std::endl;
-                // std::cout << "right state: rho = " << rhoR << ", v = " << vR[d] << ", p = " << pR << ", e = " << eR << ", c = " << cR
-                //           << std::endl;
-
-                // std::cout << "HLL Computed flux: " << flux << std::endl;
             };
         });
     auto scheme = make_flux_based_scheme(hll);

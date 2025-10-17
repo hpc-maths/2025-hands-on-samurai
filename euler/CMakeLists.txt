@@ -16,3 +16,6 @@ target_link_libraries(double_mach_reflection PRIVATE samurai::samurai)
 
 add_executable(sedov_blast main_sedov_blast.cpp)
 target_link_libraries(sedov_blast PRIVATE samurai::samurai)
+
+add_executable(main_2d main_2d.cpp)
+target_link_libraries(main_2d PRIVATE samurai::samurai)

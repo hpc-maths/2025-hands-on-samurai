@@ -16,14 +16,19 @@ auto get_max_lambda(const auto& u)
     samurai::for_each_cell(mesh,
                            [&](const auto& cell)
                            {
-                               auto [rho, vel, e, p, c] = extract_primitive<dim>(u[cell]);
-                               double sum               = 0;
+                               auto prim = cons2prim<dim>(u[cell]);
+
+                               //    double sum = 0;
+                               //    for (std::size_t d = 0; d < dim; ++d)
+                               //    {
+                               //        sum += std::abs(prim.v[d]) + prim.c;
+                               //    }
+                               //    res = std::max(sum, res);
+
                                for (std::size_t d = 0; d < dim; ++d)
                                {
-                                   sum += std::abs(vel[d]) + c;
-                                   //    res = std::max(std::abs(vel[d]) + c, res);
+                                   res = std::max(std::abs(prim.v[d]) + prim.c, res);
                                }
-                               res = std::max(sum, res);
                            });
     return res;
 }

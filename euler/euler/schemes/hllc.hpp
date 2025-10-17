@@ -5,25 +5,23 @@
 #include "../variables.hpp"
 #include "flux.hpp"
 
-template <std::size_t dim, std::size_t d>
-auto compute_star_state(const auto& q, double s, double s_star)
+template <std::size_t d, std::size_t dim>
+auto compute_star_state(const PrimState<dim>& prim, double s, double s_star)
 {
-    using state_t = std::decay_t<decltype(q)>;
+    xt::xtensor_fixed<double, xt::xshape<dim + 2>> q_star;
 
-    state_t q_star;
+    auto rho_star = prim.rho * (s - prim.v[d]) / (s - s_star);
 
-    auto [rho, v, e, p, c] = extract_primitive<dim>(q);
-
-    auto rho_star = rho * (s - v[d]) / (s - s_star);
-
-    q_star[EulerVariable::rho] = rho_star;
+    q_star[EulerConsVar::rho] = rho_star;
 
     for (std::size_t i = 0; i < dim; ++i)
     {
-        q_star[EulerVariable::rhou + i] = rho_star * v[i];
+        q_star[EulerConsVar::rhou + i] = rho_star * prim.v[i];
     }
-    q_star[EulerVariable::rhou + d] = rho_star * s_star;
-    q_star[EulerVariable::rhoE]     = rho_star * (e + 0.5 * xt::sum(xt::square(v))() + (s_star - v[d]) * (s_star + p / (rho * (s - v[d]))));
+    q_star[EulerConsVar::rhou + d] = rho_star * s_star;
+    q_star[EulerConsVar::rhoE]     = rho_star
+                               * (prim.e + 0.5 * xt::sum(xt::square(prim.v))()
+                                  + (s_star - prim.v[d]) * (s_star + prim.p / (prim.rho * (s - prim.v[d]))));
 
     return q_star;
 }
@@ -50,32 +48,32 @@ auto make_euler_hllc()
                 static constexpr std::size_t left  = 0;
                 static constexpr std::size_t right = 1;
 
-                const auto& qL              = field[left];
-                auto [rhoL, vL, eL, pL, cL] = extract_primitive<dim>(qL);
+                const auto& qL = field[left];
+                auto primL     = cons2prim<dim>(qL);
 
-                const auto& qR              = field[right];
-                auto [rhoR, vR, eR, pR, cR] = extract_primitive<dim>(qR);
+                const auto& qR = field[right];
+                auto primR     = cons2prim<dim>(qR);
 
-                double sL = std::min(vL[d] - cL, vR[d] - cR);
-                double sR = std::max(vL[d] + cL, vR[d] + cR);
-                double sM = (rhoL * vL[d] * (sL - vL[d]) - pL - rhoR * vR[d] * (sR - vR[d]) + pR)
-                          / (rhoL * (sL - vL[d]) - rhoR * (sR - vR[d]));
+                double sL = std::min(primL.v[d] - primL.c, primR.v[d] - primR.c);
+                double sR = std::max(primL.v[d] + primL.c, primR.v[d] + primR.c);
+                double sM = (primL.rho * primL.v[d] * (sL - primL.v[d]) - primL.p - primR.rho * primR.v[d] * (sR - primR.v[d]) + primR.p)
+                          / (primL.rho * (sL - primL.v[d]) - primR.rho * (sR - primR.v[d]));
 
                 if (sL >= 0)
                 {
-                    flux = compute_flux<dim, d>(rhoL, vL, eL, pL);
+                    flux = compute_flux<d>(primL);
                 }
                 else if (sL < 0 && sM >= 0)
                 {
-                    flux = compute_flux<dim, d>(rhoL, vL, eL, pL) + sL * (compute_star_state<dim, d>(qL, sL, sM) - qL);
+                    flux = compute_flux<d>(primL) + sL * (compute_star_state<d>(primL, sL, sM) - qL);
                 }
                 else if (sM < 0 && sR >= 0)
                 {
-                    flux = compute_flux<dim, d>(rhoR, vR, eR, pR) + sR * (compute_star_state<dim, d>(qR, sR, sM) - qR);
+                    flux = compute_flux<d>(primR) + sR * (compute_star_state<d>(primR, sR, sM) - qR);
                 }
                 else if (sR < 0)
                 {
-                    flux = compute_flux<dim, d>(rhoR, vR, eR, pR);
+                    flux = compute_flux<d>(primR);
                 }
             };
         });
