@@ -159,9 +159,9 @@ u(x, y) = \exp\left(-\frac{x^2 + y^2}{2}\right)
 
 At the end of this step, open ParaView to visualize the field you have created and initialized. You must open the xdmf file (not the h5 file) to see both the mesh and the field.
 
-### Another Loop
+### Another Loop Approach
 
-samurai provides another way to loop over the cells using its interval-based functionality. `samurai::for_each_cell` uses this functionality under the hood. This loop function is called `samurai::for_each_interval`. Here is how you can use it:
+samurai provides an alternative way to loop over cells using its interval-based functionality. `samurai::for_each_cell` uses this functionality under the hood. This loop function is called `samurai::for_each_interval`. Here is how you can use it:
 
 ```cpp
 samurai::for_each_interval(mesh, [&](std::size_t level, const auto& interval, const auto& index)
@@ -170,17 +170,29 @@ samurai::for_each_interval(mesh, [&](std::size_t level, const auto& interval, co
 });
 ```
 
-We need to make some explanations here about the parameters of the lambda:
+Let's explain the lambda parameters:
 - `level`: the level of the cells in the current interval
 - `interval`: an instance of `samurai::Interval` defining the cells in the x direction
-- `index`: a container of size $dim - 1$ containing the indices of the cells in the directions other than the x direction
+- `index`: a container of size $dim - 1$ containing the indices of the cells in directions other than x
 
-In the previous exercise, we use the accessor `field[cell]` to access the field value at the cell. In this loop, you can use the accessor `field(level, interval, index)` to access the field value at the interval.
+In the previous exercise, we used the accessor `field[cell]` to access the field value at the cell. In this loop, you can use the accessor `field(level, interval, index)` to access the field values at the interval.
 
 ```{caution}
-You don't have a scalar value now but a whole interval of values. We use xtensor to have a numpy-like array of values and perform lazy evaluation. For more details, refer to the [From NumPy to xtensor documentation](https://xtensor.readthedocs.io/en/latest/numpy.html).
+You now have an entire interval of values rather than a single scalar value. We use xtensor to provide a NumPy-like array of values and perform lazy evaluation. For more details, refer to the [From NumPy to xtensor documentation](https://xtensor.readthedocs.io/en/latest/numpy.html).
+```
+
+```{note}
+In the following exercises, we will use `i` instead of `interval` to simplify the notation.
 ```
 
 ````{exercise}
-Rewrite the initialization of the field using the `samurai::for_each_interval` function instead of `samurai::for_each_cell`.
+Rewrite the field initialization using the `samurai::for_each_interval` function instead of `samurai::for_each_cell`.
+
+If you are familiar with NumPy, you can use the `xt::arange` function to create an array of cell centers for the interval. Then, compute the Gaussian function on this array and assign it to the field. Refer to [loop over intervals](https://hpc-math-samurai.readthedocs.io/en/latest/howto/loop.html#looping-over-intervals) to have an example.
 ````
+
+### Conclusion
+
+In this first step of the practical session, you have learned how to create one-dimensional and two-dimensional multi-resolution meshes using samurai. Recall that other mesh types exist in samurai, but they are beyond the scope of this session. You have also created scalar fields on these meshes and initialized them with Gaussian functions. Finally, you visualized the fields using matplotlib and ParaView.
+
+Congratulations on completing this step! You are now ready to move on to the next part of the practical session, where we will explore how to implement a finite volume scheme to solve the Burgers equation.
