@@ -33,15 +33,15 @@ jobs:
             - uses: actions/setup-node@v4
               with:
                   node-version: 18.x
-            # - name: Install dependencies
-            #   run: npm install
+            - name: Install dependencies
+              run: npm install
             - name: Install MyST Markdown
               run: npm install -g mystmd
             - name: Build HTML Assets
               run: myst build --html
 
-            - name: Build
-              run: npm run build
+            # - name: Build
+            #   run: npm run build
             - name: Upload artifact
               uses: actions/upload-pages-artifact@v3
               with:
