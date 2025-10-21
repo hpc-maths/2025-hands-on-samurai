@@ -9,10 +9,9 @@ template <class Field>
 auto make_euler_hll()
 {
     static constexpr std::size_t dim          = Field::dim;
-    static constexpr std::size_t field_size   = Field::n_comp;
     static constexpr std::size_t stencil_size = 2;
 
-    using cfg = samurai::FluxConfig<samurai::SchemeType::NonLinear, field_size, stencil_size, Field>;
+    using cfg = samurai::FluxConfig<samurai::SchemeType::NonLinear, stencil_size, Field, Field>;
 
     samurai::FluxDefinition<cfg> hll;
 

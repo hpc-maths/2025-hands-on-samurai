@@ -1,0 +1,7 @@
+format: jb-book
+root: index
+parts:
+  - caption: Practical session
+    chapters:
+      - file: practical_session/00-setup
+      - file: practical_session/01-first-step

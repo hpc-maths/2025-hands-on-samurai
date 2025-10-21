@@ -1,0 +1,19 @@
+# See docs at: https://mystmd.org/guide/frontmatter
+version: 1
+project:
+  title: "Hands-on samurai"
+  keywords: []
+  authors: [samurai dev team]
+  github: https://github.com/hpc-maths/2025-hands-on-samurai
+  license:
+    code: MIT
+    content: CC-BY-4.0
+site:
+  template: book-theme
+  title: "Hands-on samurai"
+  # logo:
+  nav: []
+  # actions:
+  #   - title: Learn More
+  #     url: https://mystmd.org/guide
+  domains: []

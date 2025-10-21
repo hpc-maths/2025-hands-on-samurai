@@ -10,24 +10,57 @@
 
 #include "euler/config.hpp"
 #include "euler/init/cases.hpp"
+#include "euler/prediction.hpp"
 #include "euler/schemes.hpp"
 #include "euler/utils.hpp"
 #include "euler/variables.hpp"
 
 template <class Field>
-void init_sol(Field& u, const std::string& test_case_name)
+void init_sol(Field& u, int jump, auto& mra_config, const std::string& test_case_name)
 {
+    static constexpr std::size_t dim = Field::dim;
+    using mesh_t                     = typename Field::mesh_t;
+    using cl_type                    = typename mesh_t::cl_type;
+
     auto& registry  = test_case::TestCaseRegistry<Field>::instance();
     auto& test_case = registry.get(test_case_name);
 
     auto& mesh = u.mesh();
     u.resize();
-
     samurai::for_each_cell(mesh,
                            [&](auto& cell)
                            {
                                test_case.init(u, cell);
                            });
+
+    auto MRadaptation = samurai::make_MRAdapt(u);
+    MRadaptation(mra_config);
+
+    while (jump > 0)
+    {
+        cl_type cl;
+        for_each_interval(mesh,
+                          [&](std::size_t level, const auto& i, const auto& index)
+                          {
+                              samurai::static_nested_loop<dim - 1, 0, 2>(
+                                  [&](const auto& stencil)
+                                  {
+                                      auto new_index = 2 * index + stencil;
+                                      cl[level + 1][new_index].add_interval(i << 1);
+                                  });
+                          });
+        mesh.max_level() += 1;
+        mesh = {cl, mesh};
+
+        u.resize();
+        samurai::for_each_cell(mesh,
+                               [&](auto& cell)
+                               {
+                                   test_case.init(u, cell);
+                               });
+        MRadaptation(mra_config);
+        jump--;
+    }
 }
 
 template <class Field>
@@ -48,10 +81,11 @@ auto init_box(const std::string& test_case_name)
 
 int main(int argc, char* argv[])
 {
-    constexpr std::size_t dim = 2;
-    using Config              = samurai::MRConfig<dim>;
-    using mesh_t              = samurai::MRMesh<Config>;
-    using field_t             = samurai::VectorField<mesh_t, double, dim + 2>;
+    constexpr std::size_t dim           = 2;
+    constexpr std::size_t default_level = 8;
+    using Config                        = samurai::MRConfig<dim>;
+    using mesh_t                        = samurai::MRMesh<Config>;
+    using field_t                       = samurai::VectorField<mesh_t, double, dim + 2>;
 
     auto& app = samurai::initialize("Double mach reflection", argc, argv);
 
@@ -96,10 +130,29 @@ int main(int argc, char* argv[])
     samurai::MRMesh<Config> mesh;
     auto u = samurai::make_vector_field<double, 2 + dim>("euler", mesh);
 
+    auto prediction_fn = [&](auto& new_field, const auto& old_field)
+    {
+        return make_field_operator_function<Euler_prediction_op>(new_field, old_field);
+    };
+
+    auto MRadaptation = samurai::make_MRAdapt(prediction_fn, u);
+    // auto MRadaptation = samurai::make_MRAdapt(u);
+    auto mra_config = samurai::mra_config().epsilon(samurai::args::epsilon).relative_detail(true);
+
     if (restart_file.empty())
     {
-        mesh = {box, min_level, max_level};
-        init_sol(u, test_case);
+        int jump = 0;
+        if (min_level == max_level)
+        {
+            mesh = {box, min_level, max_level};
+        }
+        else
+        {
+            mesh = {box, min_level, std::min(default_level, max_level)};
+            jump = static_cast<int>(max_level - default_level);
+        }
+        std::cout << "jump: " << jump << std::endl;
+        init_sol(u, jump, mra_config, test_case);
     }
     else
     {
@@ -113,10 +166,6 @@ int main(int argc, char* argv[])
     const double dt_save = Tf / static_cast<double>(nfiles);
     std::size_t nsave    = 0;
     std::size_t nt       = 0;
-
-    auto MRadaptation = samurai::make_MRAdapt(u);
-    auto mra_config   = samurai::mra_config().epsilon(1e-3).relative_detail(true);
-    MRadaptation(mra_config);
 
     samurai::save(fmt::format("{}_{}_init", filename, scheme), mesh, u);
 

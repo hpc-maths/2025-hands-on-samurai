@@ -18,17 +18,17 @@ auto get_max_lambda(const auto& u)
                            {
                                auto prim = cons2prim<dim>(u[cell]);
 
-                               //    double sum = 0;
-                               //    for (std::size_t d = 0; d < dim; ++d)
-                               //    {
-                               //        sum += std::abs(prim.v[d]) + prim.c;
-                               //    }
-                               //    res = std::max(sum, res);
-
+                               double sum = 0;
                                for (std::size_t d = 0; d < dim; ++d)
                                {
-                                   res = std::max(std::abs(prim.v[d]) + prim.c, res);
+                                   sum += std::abs(prim.v[d]) + prim.c;
                                }
+                               res = std::max(sum, res);
+
+                               //    for (std::size_t d = 0; d < dim; ++d)
+                               //    {
+                               //        res = std::max(std::abs(prim.v[d]) + prim.c, res);
+                               //    }
                            });
     return res;
 }
