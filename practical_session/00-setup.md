@@ -4,6 +4,18 @@ During this practical session, we will use the samurai library and demonstrate i
 
 ## Prerequisites
 
+The first step is to clone the samurai hands-on repository from GitHub. You can do this by running the following command in your terminal:
+
+```bash
+git clone https://github.com/hpc-maths/2025-hands-on-samurai.git
+```
+
+Go to the cloned directory:
+
+```bash
+cd 2025-hands-on-samurai
+```
+
 We provide a conda environment file (`environment.yml`) to facilitate the setup process. You can create and activate the conda environment by running the following commands in your terminal:
 
 ```bash
@@ -27,6 +39,7 @@ If you want to set up the environment manually, please ensure you have the follo
 To verify that your environment is set up correctly, you can compile and run the provided example code. Navigate to the `practical_session/material/00-setup` directory and execute the following commands:
 
 ```bash
+cd practical_session/material/00-setup
 cmake -S . -B build
 cmake --build build
 ./build/samurai_setup_test -h
