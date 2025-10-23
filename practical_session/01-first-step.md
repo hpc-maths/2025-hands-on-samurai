@@ -71,7 +71,7 @@ You have successfully created a scalar field on the one-dimensional multi-resolu
 We now want to initialize the field with a Gaussian function defined as:
 
 $$
-f(x) = e^{-x^2}
+f(x) = \exp\left(-50 x^2\right)
 $$
 
 To do this, we need to loop over all the cells of the mesh, get the center of each cell, and set the field value at that cell to the Gaussian function value at the cell center.
@@ -135,12 +135,12 @@ Since we are working with a one-dimensional field, we cannot use ParaView direct
 Let's start by saving the mesh and the field to files that can be read by the Python script. You can use the `samurai::save` function to save both the mesh and the field.
 
 ````{exercise}
-Write the code to save the mesh and the field to a file named `my_field`.
+Write the code to save the mesh and the field to a file named `field_1d`.
 ````
 Once you have saved the mesh and the field, you can use the provided Python script to visualize the field. Run the following command in your terminal:
 
 ```bash
-python practical_session/material/01-first-step/read_mesh.py --field u
+python practical_session/material/01-first-step/read_mesh.py field_1d --field u
 ```
 
 ```{caution}
@@ -154,7 +154,7 @@ You have successfully initialized and visualized the scalar field on the one-dim
 Using the knowledge you have gained so far, try to create a two-dimensional multi-resolution mesh, create a scalar field on this mesh, and initialize it with a two-dimensional Gaussian function defined as:
 
 ```math
-u(x, y) = \exp\left(-\frac{x^2 + y^2}{2}\right)
+u(x, y) = \exp\left(-50 (x^2 + y^2)\right)
 ```
 
 At the end of this step, open ParaView to visualize the field you have created and initialized. You must open the xdmf file (not the h5 file) to see both the mesh and the field.
