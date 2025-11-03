@@ -6,3 +6,5 @@ parts:
       - file: practical_session/00-setup
       - file: practical_session/01-first-step
       - file: practical_session/02-naive-burgers
+      - file: practical_session/03-flux-burgers
+      - file: practical_session/04-euler
