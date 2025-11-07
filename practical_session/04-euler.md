@@ -94,7 +94,7 @@ The intermediate states $\mathbf{u}_L^*$ and $\mathbf{u}_R^*$ in the star region
 1 \\
 s_M \\
 v_K \\
-\frac{\rho_K E_K}{\rho_K} + (s_M - u_K)\left(s_M + \frac{p_K}{\rho_K(s_K - u_K)}\right)
+E_K + (s_M - u_K)\left(s_M + \frac{p_K}{\rho_K(s_K - u_K)}\right)
 \end{pmatrix}
 ```
 
