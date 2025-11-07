@@ -4,21 +4,21 @@ It's time to stand on your own two feet and implement the Euler equations using 
 
 $$
 \frac{\partial }{\partial t} \begin{pmatrix}
-\rho \\\\ \rho u \\\\ \rho v \\\\ E
+\rho \\\\ \rho u \\\\ \rho v \\\\ \rho E
 \end{pmatrix}
 + \frac{\partial }{\partial x} \begin{pmatrix}
-\rho u \\\\ \rho u^2 + p \\\\ \rho uv \\\\ u(E + p)
+\rho u \\\\ \rho u^2 + p \\\\ \rho uv \\\\ u(\rho E + p)
 \end{pmatrix}
 + \frac{\partial }{\partial y} \begin{pmatrix}
-\rho v \\\\ \rho uv \\\\ \rho v^2 + p \\\\ v(E + p)
+\rho v \\\\ \rho uv \\\\ \rho v^2 + p \\\\ v(\rho E + p)
 \end{pmatrix}
 = 0
 $$
 
-where $\rho$ is the density, $u$ and $v$ are the velocity components in the x and y directions respectively, $E$ is the total energy per unit volume, and $p$ is the pressure given by the equation of state for an ideal gas:
+where $\rho$ is the density, $u$ and $v$ are the velocity components in the x and y directions respectively, $\rho E$ is the total energy per unit volume, and $p$ is the pressure given by the equation of state for an ideal gas:
 
 $$
-p = (\gamma - 1) \left( E - \frac{1}{2 } \rho (u^2 + v^2) \right)
+p = (\gamma - 1) \left( \rho E - \frac{1}{2 } \rho (u^2 + v^2) \right)
 $$
 
 $\gamma$ is the ratio of specific heats (typically 1.4 for air).
@@ -94,7 +94,7 @@ The intermediate states $\mathbf{u}_L^*$ and $\mathbf{u}_R^*$ in the star region
 1 \\
 s_M \\
 v_K \\
-\frac{E_K}{\rho_K} + (s_M - u_K)\left(s_M + \frac{p_K}{\rho_K(s_K - u_K)}\right)
+\frac{\rho_K E_K}{\rho_K} + (s_M - u_K)\left(s_M + \frac{p_K}{\rho_K(s_K - u_K)}\right)
 \end{pmatrix}
 ```
 
