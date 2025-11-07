@@ -65,6 +65,7 @@ namespace test_case::double_mach_reflection
     void bc_fn(auto& u, double& t)
     {
         static constexpr std::size_t dim = std::decay_t<decltype(u)>::dim;
+        using EulerConsVar               = EulerLayout<dim>;
 
         const xt::xtensor_fixed<int, xt::xshape<dim>> bottom = {0, -1};
         samurai::make_bc<Value>(u,
@@ -78,8 +79,8 @@ namespace test_case::double_mach_reflection
                                     {
                                         return xt::xtensor_fixed<double, xt::xshape<dim + 2>>{u[cell][EulerConsVar::rho],
                                                                                               u[cell][EulerConsVar::rhoE],
-                                                                                              u[cell][EulerConsVar::rhou],
-                                                                                              -u[cell][EulerConsVar::rhou + 1]};
+                                                                                              u[cell][EulerConsVar::mom(0)],
+                                                                                              -u[cell][EulerConsVar::mom(1)]};
                                     }
                                 })
             ->on(bottom);

@@ -19,7 +19,8 @@ class Euler_prediction_op : public samurai::field_operator_base<dim, TInterval>
 
     inline void operator()(samurai::Dim<2>, auto& dest, const auto& src) const
     {
-        using field_t = std::decay_t<decltype(src)>;
+        using EulerConsVar = EulerLayout<dim>;
+        using field_t      = std::decay_t<decltype(src)>;
 
         /*--- Compute unchanged prediction ---*/
         constexpr std::size_t pred_order = field_t::mesh_t::config::prediction_order;
@@ -61,7 +62,7 @@ class Euler_prediction_op : public samurai::field_operator_base<dim, TInterval>
 
                     for (std::size_t d = 0; d < dim; ++d)
                     {
-                        auto v_d = dest(EulerConsVar::rhou + d, level + 1, ii, jj + stencil[0])
+                        auto v_d = dest(EulerConsVar::mom(d), level + 1, ii, jj + stencil[0])
                                  / dest(EulerConsVar::rho, level + 1, ii, jj + stencil[0]);
                         e -= 0.5 * v_d * v_d;
                     }
@@ -83,7 +84,7 @@ class Euler_prediction_op : public samurai::field_operator_base<dim, TInterval>
 
                     for (std::size_t d = 0; d < dim; ++d)
                     {
-                        auto v_d = dest(EulerConsVar::rhou + d, level + 1, ii + 1, jj + stencil[0])
+                        auto v_d = dest(EulerConsVar::mom(d), level + 1, ii + 1, jj + stencil[0])
                                  / dest(EulerConsVar::rho, level + 1, ii + 1, jj + stencil[0]);
                         e -= 0.5 * v_d * v_d;
                     }

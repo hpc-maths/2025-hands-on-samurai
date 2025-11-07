@@ -5,10 +5,11 @@
 #include "../variables.hpp"
 #include "flux.hpp"
 
-template <std::size_t d, std::size_t dim>
-auto compute_star_state(const PrimState<dim>& prim, double s, double s_star)
+template <std::size_t d, std::size_t Dim, std::size_t NSpecies>
+auto compute_star_state(const PrimState<Dim, NSpecies>& prim, double s, double s_star)
 {
-    xt::xtensor_fixed<double, xt::xshape<dim + 2>> q_star;
+    using EulerConsVar = EulerLayout<Dim, NSpecies>;
+    xt::xtensor_fixed<double, xt::xshape<EulerConsVar::size>> q_star;
 
     auto rho_star = prim.rho * (s - prim.v[d]) / (s - s_star);
 
@@ -17,12 +18,12 @@ auto compute_star_state(const PrimState<dim>& prim, double s, double s_star)
     auto e                     = EOS::stiffened_gas::e(prim.rho, prim.p);
     q_star[EulerConsVar::rhoE] = rho_star * (e + (s_star - prim.v[d]) * (s_star + prim.p / (prim.rho * (s - prim.v[d]))));
 
-    for (std::size_t i = 0; i < dim; ++i)
+    for (std::size_t i = 0; i < Dim; ++i)
     {
-        q_star[EulerConsVar::rhou + i] = rho_star * prim.v[i];
+        q_star[EulerConsVar::mom(i)] = rho_star * prim.v[i];
         q_star[EulerConsVar::rhoE] += 0.5 * rho_star * prim.v[i] * prim.v[i];
     }
-    q_star[EulerConsVar::rhou + d] = rho_star * s_star;
+    q_star[EulerConsVar::mom(d)] = rho_star * s_star;
 
     return q_star;
 }
