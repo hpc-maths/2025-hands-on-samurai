@@ -13,17 +13,13 @@ namespace test_case::double_mach_reflection
 
     PrimState<2> left_state{
         8.,
-        EOS::e(8., 116.5),
         116.5,
-        EOS::c(8., 116.5),
         xt::xtensor_fixed<double, xt::xshape<2>>{8.25 * std::sin(alpha), -8.25 * std::cos(alpha)}
     };
 
     PrimState<2> right_state{
         1.4,
-        EOS::e(1.4, 1.),
         1.,
-        EOS::c(1.4, 1.),
         xt::xtensor_fixed<double, xt::xshape<2>>{0., 0.}
     };
 
@@ -108,12 +104,12 @@ namespace test_case::double_mach_reflection
         samurai::make_bc<samurai::Neumann<1>>(u, 0, 0, 0, 0)->on(right);
 
         const xt::xtensor_fixed<int, xt::xshape<dim>> left = {-1, 0};
-        samurai::make_bc<Value>(
-            u,
-            left_state.rho,
-            left_state.rho * (left_state.e + 0.5 * (left_state.v[0] * left_state.v[0] + left_state.v[1] * left_state.v[1])),
-            left_state.rho * left_state.v[0],
-            left_state.rho * left_state.v[1])
+        auto e                                             = EOS::stiffened_gas::e(left_state.rho, left_state.p);
+        samurai::make_bc<Value>(u,
+                                left_state.rho,
+                                left_state.rho * (e + 0.5 * (left_state.v[0] * left_state.v[0] + left_state.v[1] * left_state.v[1])),
+                                left_state.rho * left_state.v[0],
+                                left_state.rho * left_state.v[1])
             ->on(left);
     }
 

@@ -13,9 +13,7 @@ template <std::size_t dim>
 struct PrimState
 {
     double rho;
-    double e;
     double p;
-    double c;
     xt::xtensor_fixed<double, xt::xshape<dim>> v;
 };
 
@@ -25,14 +23,13 @@ auto cons2prim(const xt::xtensor_fixed<double, xt::xshape<dim + 2>>& conserved)
     PrimState<dim> primitives;
 
     primitives.rho = conserved[EulerConsVar::rho];
-    primitives.e   = conserved[EulerConsVar::rhoE] / conserved[EulerConsVar::rho];
+    auto e         = conserved[EulerConsVar::rhoE] / conserved[EulerConsVar::rho];
     for (std::size_t d = 0; d < dim; ++d)
     {
         primitives.v[d] = conserved[EulerConsVar::rhou + d] / conserved[EulerConsVar::rho];
-        primitives.e -= 0.5 * (primitives.v[d] * primitives.v[d]);
+        e -= 0.5 * (primitives.v[d] * primitives.v[d]);
     }
-    primitives.p = EOS::p(primitives.rho, primitives.e);
-    primitives.c = EOS::c(primitives.rho, primitives.p);
+    primitives.p = EOS::stiffened_gas::p(primitives.rho, e);
     return primitives;
 }
 
@@ -42,7 +39,8 @@ auto prim2cons(const PrimState<dim>& primitives)
     xt::xtensor_fixed<double, xt::xshape<dim + 2>> conserved;
 
     conserved[EulerConsVar::rho]  = primitives.rho;
-    conserved[EulerConsVar::rhoE] = primitives.e * conserved[EulerConsVar::rho];
+    auto e                        = EOS::stiffened_gas::e(primitives.rho, primitives.p);
+    conserved[EulerConsVar::rhoE] = e * conserved[EulerConsVar::rho];
     for (std::size_t d = 0; d < dim; ++d)
     {
         conserved[EulerConsVar::rhou + d] = primitives.v[d] * conserved[EulerConsVar::rho];

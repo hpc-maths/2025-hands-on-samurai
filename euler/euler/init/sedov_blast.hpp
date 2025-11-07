@@ -34,7 +34,7 @@ namespace test_case::sedov_blast
         if (r < r_blast)
         {
             // Blast zone: concentrated energy
-            p = (EOS::gamma - 1.0) * E_blast / V_blast;
+            p = (EOS::stiffened_gas::gamma - 1.0) * E_blast / V_blast;
         }
         else
         {
@@ -46,7 +46,7 @@ namespace test_case::sedov_blast
         u[cell][EulerConsVar::rho]      = rho;
         u[cell][EulerConsVar::rhou]     = rho * vx;
         u[cell][EulerConsVar::rhou + 1] = rho * vy;
-        u[cell][EulerConsVar::rhoE]     = rho * (EOS::e(rho, p) + 0.5 * (vx * vx + vy * vy));
+        u[cell][EulerConsVar::rhoE]     = rho * (EOS::stiffened_gas::e(rho, p) + 0.5 * (vx * vx + vy * vy));
     };
 
     void bc_fn(auto& u, double /*t*/)

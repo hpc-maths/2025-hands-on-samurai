@@ -6,6 +6,7 @@
 #include <samurai/samurai.hpp>
 
 #include "euler/schemes.hpp"
+#include "euler/utils.hpp"
 #include "euler/variables.hpp"
 
 double rhoL = 1.;
@@ -48,25 +49,6 @@ void init(auto& u)
                                    set_conserved(u[cell], rhoR, pR, vR);
                                }
                            });
-}
-
-auto get_max_lambda(const auto& u)
-{
-    static constexpr std::size_t dim = std::decay_t<decltype(u)>::dim;
-    double res                       = 0.;
-
-    const auto& mesh = u.mesh();
-
-    samurai::for_each_cell(mesh,
-                           [&](const auto& cell)
-                           {
-                               auto [rho, vel, e, p, c] = extract_primitive<dim>(u[cell]);
-                               for (std::size_t d = 0; d < dim; ++d)
-                               {
-                                   res = std::max(std::abs(vel[d]) + c, res);
-                               }
-                           });
-    return res;
 }
 
 int main(int argc, char* argv[])

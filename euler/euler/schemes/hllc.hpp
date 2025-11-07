@@ -14,14 +14,15 @@ auto compute_star_state(const PrimState<dim>& prim, double s, double s_star)
 
     q_star[EulerConsVar::rho] = rho_star;
 
+    auto e                     = EOS::stiffened_gas::e(prim.rho, prim.p);
+    q_star[EulerConsVar::rhoE] = rho_star * (e + (s_star - prim.v[d]) * (s_star + prim.p / (prim.rho * (s - prim.v[d]))));
+
     for (std::size_t i = 0; i < dim; ++i)
     {
         q_star[EulerConsVar::rhou + i] = rho_star * prim.v[i];
+        q_star[EulerConsVar::rhoE] += 0.5 * rho_star * prim.v[i] * prim.v[i];
     }
     q_star[EulerConsVar::rhou + d] = rho_star * s_star;
-    q_star[EulerConsVar::rhoE]     = rho_star
-                               * (prim.e + 0.5 * xt::sum(xt::square(prim.v))()
-                                  + (s_star - prim.v[d]) * (s_star + prim.p / (prim.rho * (s - prim.v[d]))));
 
     return q_star;
 }
@@ -32,7 +33,8 @@ auto make_euler_hllc()
     static constexpr std::size_t dim          = Field::dim;
     static constexpr std::size_t stencil_size = 2;
 
-    using cfg = samurai::FluxConfig<samurai::SchemeType::NonLinear, stencil_size, Field, Field>;
+    using eos_model = EOS::stiffened_gas;
+    using cfg       = samurai::FluxConfig<samurai::SchemeType::NonLinear, stencil_size, Field, Field>;
 
     samurai::FluxDefinition<cfg> hllc;
 
@@ -49,12 +51,14 @@ auto make_euler_hllc()
 
                 const auto& qL = field[left];
                 auto primL     = cons2prim<dim>(qL);
+                auto cL        = eos_model::c(primL.rho, primL.p);
 
                 const auto& qR = field[right];
                 auto primR     = cons2prim<dim>(qR);
+                auto cR        = eos_model::c(primR.rho, primR.p);
 
-                double sL = std::min(primL.v[d] - primL.c, primR.v[d] - primR.c);
-                double sR = std::max(primL.v[d] + primL.c, primR.v[d] + primR.c);
+                double sL = std::min(primL.v[d] - cL, primR.v[d] - cR);
+                double sR = std::max(primL.v[d] + cL, primR.v[d] + cR);
                 double sM = (primL.rho * primL.v[d] * (sL - primL.v[d]) - primL.p - primR.rho * primR.v[d] * (sR - primR.v[d]) + primR.p)
                           / (primL.rho * (sL - primL.v[d]) - primR.rho * (sR - primR.v[d]));
 

@@ -11,7 +11,8 @@ auto make_euler_rusanov()
     static constexpr std::size_t dim          = Field::dim;
     static constexpr std::size_t stencil_size = 2;
 
-    using cfg = samurai::FluxConfig<samurai::SchemeType::NonLinear, stencil_size, Field, Field>;
+    using eos_model = EOS::stiffened_gas;
+    using cfg       = samurai::FluxConfig<samurai::SchemeType::NonLinear, stencil_size, Field, Field>;
 
     samurai::FluxDefinition<cfg> rusanov;
 
@@ -28,11 +29,13 @@ auto make_euler_rusanov()
 
                 const auto& qL = field[left];
                 auto primL     = cons2prim<dim>(qL);
+                auto cL        = eos_model::c(primL.rho, primL.p);
 
                 const auto& qR = field[right];
                 auto primR     = cons2prim<dim>(qR);
+                auto cR        = eos_model::c(primR.rho, primR.p);
 
-                const auto lambda = std::max(std::abs(primL.v[d]) + primL.c, std::abs(primR.v[d]) + primR.c);
+                const auto lambda = std::max(std::abs(primL.v[d]) + cL, std::abs(primR.v[d]) + cR);
 
                 flux = 0.5 * (compute_flux<d>(primL) + compute_flux<d>(primR) - lambda * (qR - qL));
             };

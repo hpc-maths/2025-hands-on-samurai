@@ -15,17 +15,13 @@ namespace test_case::sod
 
     PrimState<2> left_state{
         1.,
-        EOS::e(1., 1.),
         1.,
-        EOS::c(1., 1.),
         xt::xtensor_fixed<double, xt::xshape<2>>{0., 0.}
     };
 
     PrimState<2> right_state{
         0.125,
-        EOS::e(0.125, 0.1),
         0.1,
-        EOS::c(0.125, 0.1),
         xt::xtensor_fixed<double, xt::xshape<2>>{0., 0.}
     };
 

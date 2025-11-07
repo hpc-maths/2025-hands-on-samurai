@@ -19,9 +19,10 @@ auto get_max_lambda(const auto& u)
                                auto prim = cons2prim<dim>(u[cell]);
 
                                double sum = 0;
+                               auto c     = EOS::stiffened_gas::c(prim.rho, prim.p);
                                for (std::size_t d = 0; d < dim; ++d)
                                {
-                                   sum += std::abs(prim.v[d]) + prim.c;
+                                   sum += std::abs(prim.v[d]) + c;
                                }
                                res = std::max(sum, res);
 

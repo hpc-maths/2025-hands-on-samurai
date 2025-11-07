@@ -65,7 +65,7 @@ class Euler_prediction_op : public samurai::field_operator_base<dim, TInterval>
                                  / dest(EulerConsVar::rho, level + 1, ii, jj + stencil[0]);
                         e -= 0.5 * v_d * v_d;
                     }
-                    auto p = EOS::p(rho, e);
+                    auto p = EOS::stiffened_gas::p(rho, e);
 
                     samurai::apply_on_masked(p < 0,
                                              [&](auto& ie)
@@ -87,7 +87,7 @@ class Euler_prediction_op : public samurai::field_operator_base<dim, TInterval>
                                  / dest(EulerConsVar::rho, level + 1, ii + 1, jj + stencil[0]);
                         e -= 0.5 * v_d * v_d;
                     }
-                    auto p = EOS::p(rho, e);
+                    auto p = EOS::stiffened_gas::p(rho, e);
 
                     samurai::apply_on_masked(p < 0,
                                              [&](auto& ie)

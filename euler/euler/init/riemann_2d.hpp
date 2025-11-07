@@ -14,33 +14,25 @@ namespace test_case::riemann_2d_config_3
 
     PrimState<2> quad1_state{
         1.5,
-        EOS::e(1.5, 1.5),
         1.5,
-        EOS::c(1.5, 1.5),
         xt::xtensor_fixed<double, xt::xshape<2>>{0., 0.}
     };
 
     PrimState<2> quad2_state{
         0.5323,
-        EOS::e(0.5323, 0.3),
         0.3,
-        EOS::c(0.5323, 0.3),
         xt::xtensor_fixed<double, xt::xshape<2>>{1.206, 0.}
     };
 
     PrimState<2> quad3_state{
         0.138,
-        EOS::e(0.138, 0.29),
         0.29,
-        EOS::c(0.138, 0.29),
         xt::xtensor_fixed<double, xt::xshape<2>>{1.206, 1.206}
     };
 
     PrimState<2> quad4_state{
         0.5323,
-        EOS::e(0.5323, 0.3),
         0.3,
-        EOS::c(0.5323, 0.3),
         xt::xtensor_fixed<double, xt::xshape<2>>{0, 1.206}
     };
 
@@ -94,33 +86,25 @@ namespace test_case::riemann_2d_config_4
 
     PrimState<2> quad1_state{
         1.1,
-        EOS::e(1.1, 1.1),
         1.1,
-        EOS::c(1.1, 1.1),
         xt::xtensor_fixed<double, xt::xshape<2>>{0., 0.}
     };
 
     PrimState<2> quad2_state{
         0.5065,
-        EOS::e(0.5065, 0.35),
         0.35,
-        EOS::c(0.5065, 0.35),
         xt::xtensor_fixed<double, xt::xshape<2>>{0.8939, 0.}
     };
 
     PrimState<2> quad3_state{
         1.1,
-        EOS::e(1.1, 1.1),
         1.1,
-        EOS::c(1.1, 1.1),
         xt::xtensor_fixed<double, xt::xshape<2>>{0.8939, 0.89396}
     };
 
     PrimState<2> quad4_state{
         0.5065,
-        EOS::e(0.5065, 0.35),
         0.35,
-        EOS::c(0.5065, 0.35),
         xt::xtensor_fixed<double, xt::xshape<2>>{0, 0.89396}
     };
 
@@ -174,33 +158,25 @@ namespace test_case::riemann_2d_config_12
 
     PrimState<2> quad1_state{
         0.5197,
-        EOS::e(0.5197, 0.4),
         0.4,
-        EOS::c(0.5197, 0.4),
         xt::xtensor_fixed<double, xt::xshape<2>>{0., 0.}
     };
 
     PrimState<2> quad2_state{
         1,
-        EOS::e(1, 1),
         1,
-        EOS::c(1, 1),
         xt::xtensor_fixed<double, xt::xshape<2>>{-0.6259, 0.}
     };
 
     PrimState<2> quad3_state{
         0.8,
-        EOS::e(0.8, 1),
         1,
-        EOS::c(0.8, 1),
         xt::xtensor_fixed<double, xt::xshape<2>>{-0.6259, -0.6259}
     };
 
     PrimState<2> quad4_state{
         1,
-        EOS::e(1, 1),
         1,
-        EOS::c(1, 1),
         xt::xtensor_fixed<double, xt::xshape<2>>{0, -0.6259}
     };
 
