@@ -1,4 +1,4 @@
-# Setup Instructions
+# Setup instructions
 
 During this practical session, we will use the samurai library and demonstrate its capabilities through a series of coding exercises. Please follow the instructions below to set up your development environment.
 
@@ -34,7 +34,7 @@ If you want to set up the environment manually, please ensure you have the follo
 - pugixml library (version 1.15 or later)
 - cli11 library (version below 2.5)
 
-## Verifying the Setup
+## Verifying the setup
 
 To verify that your environment is set up correctly, you can compile and run the provided example code. Navigate to the `practical_session/material/00-setup` directory and execute the following commands:
 
@@ -49,4 +49,22 @@ You should see the help message for the samurai setup test program, indicating t
 
 If you encounter any issues during the setup process, please refer to the [samurai documentation](https://hpc-math-samurai.readthedocs.io/) or reach out to the course instructors for assistance.
 
-You are now ready to begin the practical session! Enjoy coding with samurai!
+## Verify the visualization tools
+
+### For n-D simulations with n > 1
+
+To visualize the results of your simulations with a dimension greater than 1, you will need to have ParaView installed on your system. You can download it from the [official ParaView website](https://www.paraview.org/download/).
+
+Once you have ParaView installed, you can open the output file `2d_example.xdmf` provided in the directory `material/00-setup/outputs` directly in ParaView for visualization.
+
+### For 1D simulations
+
+Unfortunately, ParaView does not support 1D visualizations directly. However, you can use the Python script provided by the samurai library to visualize 1D simulation results.
+
+This script is duplicated in the `material/00-setup/outputs` directory. You can run it with the following command inside the `material/00-setup/outputs` directory:
+
+```bash
+python read_mesh.py 1d_example --field u
+```
+
+If you successfully visualize the provided examples, your setup is complete, and you are ready to proceed with the practical sessions ! Enjoy coding with samurai!
