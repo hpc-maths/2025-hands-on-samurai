@@ -1,19 +1,20 @@
-# First Steps
+# First steps
 
 :::{note} Main Objectives
-- Create a mesh using samurai
-- Create and initialize a field on this mesh
+- Create multi-resolution meshes using samurai
+- Create and initialize scalar fields on these meshes
+- Visualize fields using matplotlib and ParaView
 :::
 
 In this part of the practical session, we will create our first mesh using the samurai library. Then, we will create a field defined on this mesh and initialize it. We will start with a simple one-dimensional mesh and then extend our approach to two dimensions.
 
-Recall that each step of this practical session builds upon the code from the previous step. If you are struggling but want to proceed to this step, you can find the complete code in the `material` folder under the corresponding step name. You can copy this code into your working directory to continue with the practical session.
+Remember that each step in this practical session builds on the code from the previous step. If you are having trouble with a step but would like to continue, you can find the complete code in the `material` folder under the corresponding step name. Copy this code into your working directory to continue the session.
 
 ## Creating a 1D Mesh
 
 Several mesh types are defined in samurai, as described in [How-to: create a samurai mesh](https://hpc-math-samurai.readthedocs.io/en/latest/howto/mesh.html). You can also create your own mesh, but that is beyond the scope of this practical session.
 
-In the following parts of the practical session, we will use adaptive mesh refinement techniques, particularly multi-resolution. Therefore, we will use a multi-resolution mesh for this first step. The class used to create such a mesh is `samurai::MRMesh`.
+In the following parts of the practical session, we will use adaptive mesh refinement (AMR) techniques, particularly multi-resolution. This allows the mesh to automatically refine in regions of interest (like shocks or steep gradients) and coarsen elsewhere to save computational cost. Multi-resolution methods are interesting because you can control the error made between the fine solution and the adapted solution without knowing anything about the physical equation you want to solve. Therefore, we will use a multi-resolution mesh from the start.
 
 Let's start with a simple one-dimensional multi-resolution mesh. The first step is to create a box that defines the computational domain. In one dimension, a box is defined by its left and right boundaries.
 
@@ -32,7 +33,7 @@ std::cout << box << std::endl;
 
 You have created your first box using samurai! You can now use this box to create a one-dimensional multi-resolution mesh.
 
-The construction of the multi-resolution mesh using the class `samurai::MRMesh` starts by defining the mesh configuration: the dimension, the stencil size of the numerical scheme, the number of cells for the graduation of the adapted mesh, and the stencil size of the prediction. Then, you can create the mesh using the box defined earlier and the minimum and maximum levels of the mesh.
+The construction of the multi-resolution mesh using the class `samurai::MRMesh` starts by defining the mesh configuration. Don't worry about the details for now—we'll use the default configuration, which is suitable for most cases. (The configuration includes technical parameters such as stencil sizes, graduation constraints, and prediction order which ensure mesh quality during adaptation.) Then, you can create the mesh using the box defined earlier and the minimum and maximum levels of the mesh.
 
 ````{exercise}
 Create a one-dimensional multi-resolution mesh using the box you created in the previous exercise. Use the default configuration for the mesh.
@@ -50,7 +51,7 @@ Take a moment to explore the output and understand the structure of the mesh you
 
 You have successfully created a one-dimensional multi-resolution mesh using samurai! In the next section, we will create a field defined on this mesh and initialize it.
 
-## Creating and Initializing a 1D Scalar Field
+## Creating and initializing a 1D scalar field
 
 In samurai, fields are defined on meshes using the `samurai::ScalarField` or `samurai::VectorField` classes. A field can represent various physical quantities, such as temperature, pressure, or velocity, depending on the problem being solved. It can be either scalar or vectorial. In this exercise, we will create a scalar field defined on the one-dimensional multi-resolution mesh we created earlier.
 
@@ -78,7 +79,7 @@ To do this, we need to loop over all the cells of the mesh, get the center of ea
 
 samurai provides an easy way to loop over all the cells of the mesh using the `for_each_cell` function, as explained in the [How-to: loop over cells in a samurai mesh](https://hpc-math-samurai.readthedocs.io/en/latest/howto/loop.html).
 
-We need to pause here to tell you that we love C++ lambdas! They are extremely useful for writing concise and readable code. If you are not familiar with them, we recommend taking a look at [Lambda expressions in C++](https://learn.microsoft.com/en-us/cpp/cpp/lambda-expressions-in-cpp?view=msvc-170). Don't worry though—we will guide you through the process.
+Before we continue, let's introduce C++ lambdas, which are essential in samurai for writing concise mesh operations. They allow you to write more readable and maintainable code. If you are not familiar with them, we recommend taking a look at [Lambda expressions in C++](https://learn.microsoft.com/en-us/cpp/cpp/lambda-expressions-in-cpp?view=msvc-170). Don't worry though—we will guide you through the process.
 
 A lambda is an anonymous function that can be defined inline. It can capture variables from the surrounding scope and be passed as an argument to other functions. The syntax of a lambda is as follows:
 
@@ -120,13 +121,13 @@ samurai::for_each_cell(mesh, [&](const auto& cell) {
 });
 ```
 
-`samurai::Cell` provides a method `center()` that returns the center of the cell as an `xt::xtensor`. In one dimension, this tensor has a single element, which is the x-coordinate of the cell center. To access this element, you can use the syntax `center()[0]` or `center(0)`. For more details, refer to the [`Cell` class documentation](https://hpc-math-samurai.readthedocs.io/en/latest/api/cell.html).
+`samurai::Cell` provides a method `center()` that returns the center of the cell as an `xt::xtensor`. To access this element, you can use either the bracket syntax center()[0] or the parenthesis syntax center(0) (both are equivalent). For more details, refer to the [`Cell` class documentation](https://hpc-math-samurai.readthedocs.io/en/latest/api/cell.html).
 
 ````{exercise}
 Now, let's initialize the field with the Gaussian function. Do this by looping over all the cells of the mesh and setting the field value at each cell to the Gaussian function value at the cell center.
 ````
 
-### Saving and Plotting the 1D Scalar Field
+### Saving and plotting the 1D scalar field
 
 To visualize a samurai field, you can save it using the built-in samurai functions to export the data in formats compatible with visualization tools like ParaView or matplotlib. Refer to [How-to: save your samurai mesh and fields](https://hpc-math-samurai.readthedocs.io/en/latest/howto/save.html) and [How-to: plot samurai fields and meshes](https://hpc-math-samurai.readthedocs.io/en/latest/howto/plot.html) for detailed instructions on saving your field data and creating plots.
 
@@ -149,9 +150,9 @@ Make sure to replace `u` with the name you used when creating the field if it di
 
 You have successfully initialized and visualized the scalar field on the one-dimensional multi-resolution mesh with the Gaussian function! You can now proceed to the next part of the practical session, where we will extend our approach to two dimensions.
 
-### A 2D Scalar Field
+### A 2D scalar field
 
-Using the knowledge you have gained so far, try to create a two-dimensional multi-resolution mesh, create a scalar field on this mesh, and initialize it with a two-dimensional Gaussian function defined as:
+Using what you've learned so far, create a two-dimensional multi-resolution mesh using a square box with boundaries from -1 to 1 in both x and y directions, create a scalar field on this mesh, and initialize it with a two-dimensional Gaussian function defined as:
 
 ```math
 u(x, y) = \exp\left(-50 (x^2 + y^2)\right)
@@ -159,9 +160,9 @@ u(x, y) = \exp\left(-50 (x^2 + y^2)\right)
 
 At the end of this step, open ParaView to visualize the field you have created and initialized. You must open the xdmf file (not the h5 file) to see both the mesh and the field.
 
-### Another Loop Approach
+### Another loop approach
 
-samurai provides an alternative way to loop over cells using its interval-based functionality. `samurai::for_each_cell` uses this functionality under the hood. This loop function is called `samurai::for_each_interval`. Here is how you can use it:
+samurai provides an alternative way to loop over cells using its interval-based functionality. This approach is more efficient because it operates on entire intervals of cells at once (using vectorized operations) rather than processing cells one by one. This is the preferred method when performance matters. `samurai::for_each_cell` uses this functionality under the hood. This loop function is called `samurai::for_each_interval`. Here is how you can use it:
 
 ```cpp
 samurai::for_each_interval(mesh, [&](std::size_t level, const auto& interval, const auto& index)
@@ -172,13 +173,13 @@ samurai::for_each_interval(mesh, [&](std::size_t level, const auto& interval, co
 
 Let's explain the lambda parameters:
 - `level`: the level of the cells in the current interval
-- `interval`: an instance of `samurai::Interval` defining the cells in the x direction
+- `interval`: an instance of `samurai::Interval` defining a contiguous range of cells in the x direction (e.g., cells with indices from `i=5` to `i=10` at a given level)
 - `index`: a container of size $dim - 1$ containing the indices of the cells in directions other than x
 
 In the previous exercise, we used the accessor `field[cell]` to access the field value at the cell. In this loop, you can use the accessor `field(level, interval, index)` to access the field values at the interval.
 
 ```{caution}
-You now have an entire interval of values rather than a single scalar value. We use xtensor to provide a NumPy-like array of values and perform lazy evaluation. For more details, refer to the [From NumPy to xtensor documentation](https://xtensor.readthedocs.io/en/latest/numpy.html).
+You now have an entire interval of values rather than a single scalar value. This means `field(level, interval, index)` or `field(level, interval, j)` with `j=index[0]` returns an xtensor array (not a scalar), providing NumPy-like functionality with lazy evaluation. For more details, refer to the [From NumPy to xtensor documentation](https://xtensor.readthedocs.io/en/latest/numpy.html). For example, computing `exp(-50 * x * x)` on an array `x` applies the operation element-wise.
 ```
 
 ```{note}
