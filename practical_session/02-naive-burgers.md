@@ -70,6 +70,10 @@ The process is always the same: first implement your solver on a fixed mesh, the
 Implement the multi-resolution adaptation step in your code.
 ```
 
+:::{important}
+Don't forget to change the `min_level` and `max_level` to allow for mesh adaptation. For example, you can set `min_level = 2` and `max_level = 8`.
+:::
+
 You can visualize the adapted mesh and the solution evolution over time using the same command as before. If you add the command-line option `--save-debug-fields` when running your program, samurai will save additional fields that can help you understand how the mesh is adapted over time, such as levels and coordinates.
 
 If you want to visualize these additional fields, you can use the following command:

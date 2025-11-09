@@ -15,12 +15,14 @@ int main(int argc, char* argv[])
     samurai::initialize("samurai naive inviscid Burgers 1d", argc, argv);
     SAMURAI_PARSE(argc, argv);
 
+    // Mesh initialization
     samurai::Box<double, dim> box({-2.0}, {4.0});
 
     std::size_t min_level = 8;
     std::size_t max_level = 8;
     mesh_t mesh{box, min_level, max_level};
 
+    // Field initialization
     auto u = samurai::make_scalar_field<double>("u", mesh);
     samurai::make_bc<samurai::Dirichlet<1>>(u, 0);
 
@@ -31,6 +33,7 @@ int main(int argc, char* argv[])
                                u[cell] = std::exp(-20 * x * x);
                            });
 
+    // Time-stepping parameters
     double cfl = 0.5;
     double dx  = mesh.cell_length(max_level);
     double dt  = cfl * dx;
@@ -38,6 +41,7 @@ int main(int argc, char* argv[])
     double t   = 0.0;
     double Tf  = 4;
 
+    // Time-stepping loop
     std::size_t nt = 0;
     while (t < Tf)
     {
@@ -45,13 +49,15 @@ int main(int argc, char* argv[])
         std::cout << "Time step " << nt << ", t = " << t << std::endl;
 
         samurai::update_ghost_mr(u);
+
         samurai::for_each_interval(mesh,
                                    [&](std::size_t level, const auto& i, const auto&)
                                    {
+                                       // PART TO IMPLEMENT
                                        // implement upwind fluxes here
                                    });
 
-        std::swap(u.array(), unp1.array());
+        samurai::swap(u, unp1);
         samurai::save(fmt::format("burgers_1d_{}", nt++), mesh, u);
     }
     samurai::finalize();
