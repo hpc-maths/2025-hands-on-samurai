@@ -75,10 +75,10 @@ int main(int argc, char* argv[])
         t += dt;
         std::cout << "Time step " << nt << ", t = " << t << std::endl;
 
-        unp1 = un - dt * conv_flux(un);
+        unp1 = u - dt * conv_flux(u);
 
         samurai::swap(u, unp1);
-        samurai::save(fmt::format("burgers_1d_{}", nt++), mesh, u);
+        samurai::save("results", fmt::format("burgers_1d_{}", nt++), mesh, u);
     }
     samurai::finalize();
     return 0;

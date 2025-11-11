@@ -166,7 +166,7 @@ int main(int argc, char* argv[])
     std::size_t nsave    = 0;
     std::size_t nt       = 0;
 
-    samurai::save(fmt::format("{}_{}_init", filename, scheme), mesh, u);
+    samurai::save("results", fmt::format("{}_{}_init", filename, scheme), mesh, u);
 
     std::cout << "Using scheme: " << scheme << std::endl;
     auto fv_scheme = get_fv_scheme<decltype(u)>(scheme);
@@ -199,7 +199,7 @@ int main(int argc, char* argv[])
         if (t >= static_cast<double>(nsave + 1) * dt_save || t == Tf)
         {
             const std::string suffix = (nfiles != 1) ? fmt::format("_ite_{}", nsave++) : "";
-            samurai::save(fmt::format("{}_{}{}", filename, scheme, suffix), mesh, u);
+            samurai::save("results", fmt::format("{}_{}{}", filename, scheme, suffix), mesh, u);
         }
     }
 

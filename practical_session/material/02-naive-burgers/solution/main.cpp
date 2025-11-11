@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
                                    });
 
         std::swap(u.array(), unp1.array());
-        samurai::save(fmt::format("burgers_1d_{}", nt++), mesh, u);
+        samurai::save("results", fmt::format("burgers_1d_{}", nt++), mesh, u);
     }
     samurai::finalize();
     return 0;

@@ -71,8 +71,7 @@ int main(int argc, char* argv[])
     auto MRadaptation = samurai::make_MRAdapt(u);
     auto mra_config   = samurai::mra_config();
 
-    // auto conv_flux = upwind_flux<decltype(u)>();
-    auto conv_flux = lax_friedrichs_flux<decltype(u)>(dt);
+    auto conv_flux = upwind_flux<decltype(u)>();
 
     while (t < Tf)
     {
@@ -85,7 +84,7 @@ int main(int argc, char* argv[])
         unp1 = u - dt * conv_flux(u);
 
         std::swap(u.array(), unp1.array());
-        samurai::save(fmt::format("burgers_2d_{}", nt++), mesh, u);
+        samurai::save("results", fmt::format("burgers_2d_{}", nt++), mesh, u);
     }
     samurai::finalize();
     return 0;

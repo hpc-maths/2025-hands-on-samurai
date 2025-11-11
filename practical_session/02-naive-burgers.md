@@ -45,7 +45,7 @@ python /path/to/read_mesh.py burgers_1d_ --field u --start 0 --end 340 --wait 10
 
 ## Mesh adaptation
 
-It is time to adapt the mesh according to the solution. We will use the multi-resolution capabilities of samurai to do so. We will not go into the theoretical details of multi-resolution here, but you can refer to [Thomas Bellotti's thesis](https://hal.science/tel-04266822v1) for more information.
+It is time to adapt the mesh according to the solution. We will use the multi-resolution capabilities of samurai to do so. We will not go into the theoretical details of multi-resolution here, but you can refer to [Thomas Bellotti's thesis](https://hal.science/tel-04266822v1) in chapter 2 for more information.
 
 Adding the adaptation step performed by the multi-resolution framework of samurai is straightforward. You simply need to follow these steps:
 
@@ -59,8 +59,13 @@ Adding the adaptation step performed by the multi-resolution framework of samura
 
 ```cpp
 auto MRadaptation = samurai::make_MRAdapt(u);
-auto mra_config   = samurai::mra_config();
+auto mra_config   = samurai::mra_config().epsilon(1e-3).relative_detail(false);
 ````
+
+:::{note}
+- The `epsilon` parameter controls the accuracy of the adaptation. A smaller value leads to a finer mesh.
+- The `relative_detail` parameter determines whether the detail coefficients are normalized to [0, 1] for each field component (true) or kept at their absolute values (false). This parameter is generally used when the solution values vary significantly in magnitude.
+:::
 
 - Inside the time loop, before updating the solution, call the adaptation function and resize the solution field:
 
@@ -73,12 +78,28 @@ unp1.resize();
 The process is always the same: first implement your solver on a fixed mesh, then add multi-resolution adaptation with just a few lines of code!
 ```
 
+:::{tip}
+You can adapt the mesh using a field and update other fields accordingly.
+
+```cpp
+auto MRadaptation = samurai::make_MRAdapt(u);
+
+...
+MRadaptation(mra_config, other_field1, other_field2, ...);
+```
+:::
+
+```{important}
+Don't forget to resize the fields that are not involved in the adaptation step as well to have the good number of cells and mesh structure for these fields! This is the goal of `unp1.resize()`.
+```
+
 ```{exercise}
 Implement the multi-resolution adaptation step in your code.
 ```
 
 :::{important}
-Don't forget to change the `min_level` and `max_level` to allow for mesh adaptation. For example, you can set `min_level = 2` and `max_level = 8`.
+- Don't forget to change the `min_level` and `max_level` to allow for mesh adaptation. For example, you can set `min_level = 2` and `max_level = 8`.
+- Choose the appropriate $\Delta x$ in the `for_each_interval` loop according to the current level of refinement of each cell. You can use the `mesh.cell_length(level)` method to get the information about the cell size at a given level.
 :::
 
 You can visualize the adapted mesh and the solution evolution over time using the same command as before. If you add the command-line option `--save-debug-fields` when running your program, samurai will save additional fields that can help you understand how the mesh is adapted over time, such as levels and coordinates.
@@ -91,4 +112,38 @@ python /path/to/read_mesh.py burgers_1d_ --field levels u --start 0 --end 340 --
 
 ## Conclusion
 
-In this part, you implemented a naive finite volume scheme for the inviscid Burgers equation using samurai. You learned how to set up the problem, implement the finite volume update, and adapt the mesh using samurai's multi-resolution capabilities. However, this naive implementation has several issues. Most notably, we do not compute the flux correctly at interfaces between cells of different refinement levels. In the next section, we will address this by implementing a flux calculation that properly accounts for the multi-resolution mesh structure.
+In this part, you implemented a naive finite volume scheme for the inviscid Burgers equation using samurai. You learned how to set up the problem, implement the finite volume update, and adapt the mesh using samurai's multi-resolution capabilities.
+
+However, this naive implementation has several issues. Most notably, we do not compute the flux correctly at interfaces between cells of different refinement levels. To understand why this is problematic, consider the conservation property of finite volume schemes.
+
+In a proper finite volume scheme, conservation requires that the flux leaving one cell exactly equals the flux entering its neighbor. This ensures that mass (or any conserved quantity) is neither created nor destroyed at cell interfaces. Mathematically, for two adjacent cells sharing an interface, the flux balance must satisfy:
+
+$$
+\Delta x \cdot F_{\text{left}} = \Delta x \cdot F_{\text{right}}
+$$
+
+where both sides represent the same physical interface flux, just viewed from each cell's perspective.
+
+![Flux conservation problem](figures/flux_conservation_problem.svg)(width=100%)
+
+At multi-resolution interfaces, the naive approach breaks down because it uses **ghost cells** to compute fluxes. Consider the diagram above:
+
+- **At level $l$ (coarse):** To compute the flux $F_{i-1/2}^l$ on the right side of the real cell $u_{i-1}^l$, we need a neighbor. Since the actual neighbor consists of fine cells at level $l+1$, we create a ghost cell $u_i^l$ (shown in pink with dashed borders).
+
+- **At level $l+1$ (fine):** Similarly, to compute the flux $F_{j-1/2}^{l+1}$ on the left side of the real cell $u_{j-1}^{l+1}$, we need a neighbor. Since the actual neighbor is a coarse cell at level $l$, we create a ghost cell $\tilde{u}_{j-2}^{l+1}$.
+
+The problem is that **these two fluxes are computed at the same physical interface** (shown by the red vertical line), but using different cell sizes and different ghost values:
+
+$$
+\Delta x_l \cdot F(u_{i-1}^l) \neq \Delta x_{l+1} \cdot F(\tilde{u}_{j-2}^{l+1})
+$$
+
+Even accounting for the size ratio ($\Delta x_l = 2\Delta x_{l+1}$), we still have:
+
+$$
+2\Delta x_{l+1} \cdot F(u_{i-1}^l) \neq \Delta x_{l+1} \cdot F(\tilde{u}_{j-2}^{l+1})
+$$
+
+The ghost values are constructed differently on each side, leading to inconsistent flux evaluations. This **breaks conservation** and can cause numerical errors, spurious oscillations, or even instabilities.
+
+In the next section, we will address this by implementing samurai's flux mechanism, which properly accounts for the multi-resolution mesh structure and ensures conservation at all interfaces.

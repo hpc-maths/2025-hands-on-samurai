@@ -166,7 +166,7 @@ int main(int argc, char* argv[])
     auto MRadaptation = samurai::make_MRAdapt(u);
     auto mra_config   = samurai::mra_config();
 
-    samurai::save(fmt::format("burgers_viscous_2d_{}", nt), mesh, u);
+    samurai::save("results", fmt::format("burgers_viscous_2d_{}", nt), mesh, u);
     nt++;
 
     while (t < Tf)
@@ -195,7 +195,7 @@ int main(int argc, char* argv[])
 
         if (nt % 10 == 0)
         {
-            samurai::save(fmt::format("burgers_viscous_2d_{}", nt), mesh, u);
+            samurai::save("results", fmt::format("burgers_viscous_2d_{}", nt), mesh, u);
         }
         nt++;
     }

@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
         unp1 = u - dt * conv_flux(u);
 
         samurai::swap(u, unp1);
-        samurai::save(fmt::format("burgers_1d_{}", nt++), mesh, u);
+        samurai::save("results", fmt::format("burgers_1d_{}", nt++), mesh, u);
     }
     samurai::finalize();
     return 0;

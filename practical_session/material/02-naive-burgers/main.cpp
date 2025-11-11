@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
                                    });
 
         samurai::swap(u, unp1);
-        samurai::save(fmt::format("burgers_{}d_{}", dim, nt++), mesh, u);
+        samurai::save("results", fmt::format("burgers_{}d_{}", dim, nt++), mesh, u);
     }
     samurai::finalize();
     return 0;
