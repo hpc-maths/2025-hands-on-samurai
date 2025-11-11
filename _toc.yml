@@ -1,8 +1,7 @@
 format: jb-book
 root: index
 parts:
-  - caption: Practical session
-    chapters:
+  - chapters:
       - file: practical_session/00-setup
       - file: practical_session/01-first-step
       - file: practical_session/02-naive-burgers
