@@ -42,7 +42,7 @@ $$
 p = (\gamma - 1) \rho e
 $$
 
-$\gamma$ is the ratio of specific heats (typically 1.4 for air).
+where $\gamma$ is the ratio of specific heats (typically 1.4 for air).
 
 ### Sound Speed
 
@@ -59,7 +59,7 @@ $$
 
 ## Explanation of the provided code
 
-Euler code becomes more complex due to the number of equations and the coupling between them. To not lose your time, we provide you with a starting code that you can find in the `euler` folder. We will now explain the different parts of the code that will help you in the next steps.
+The Euler code becomes more complex due to the number of equations and the coupling between them. To save time, we provide you with starter code that you can find in the `euler` folder. We will now explain the different parts of the code that will help you in the next steps.
 
 The configuration of the mesh and fields is defined in `config.hpp`.
 
@@ -71,7 +71,7 @@ We have defined the numbering of the components of the vector field as follows:
 - Component 2: $\rho u$ (momentum in x)
 - Component 3: $\rho v$ (momentum in y)
 
-Once, you have created the vector field `conserved` containing the conservative variables, you can access each component using:
+Once you have created the vector field `conserved` containing the conservative variables, you can access each component using:
 
 ```cpp
 // For cells
@@ -87,13 +87,15 @@ conserved(EulerConsVar::mom(d), level, i, j)
 
 ### Conversion between conservative and primitive variables
 
-Then, you need to be able to get the primitive variables from the conservative ones and vice versa. The primitive variables are given by:
+Next, you need to be able to convert the primitive variables from the conservative ones and vice versa. The primitive variables are:
 - $\rho$ (density)
-- $u = \frac{\rho u}{\rho}$ (velocity in x)
-- $v = \frac{\rho v}{\rho}$ (velocity in y)
+- $u = \frac{(\rho u)}{\rho}$ (velocity in x-direction)
+- $v = \frac{(\rho v)}{\rho}$ (velocity in y-direction)
 - $p = (\gamma - 1) \left( \rho E - \frac{1}{2} \rho (u^2 + v^2) \right)$ (pressure)
 
-The functions cons2prim and prim2cons defined in `variables.hpp` allow you to convert between these two sets of variables.
+where the notation $(\rho u)$ and $(\rho v)$ represent the momentum components.
+
+The functions `cons2prim` and `prim2cons` defined in `variables.hpp` allow you to convert between these two sets of variables.
 
 ### Equation of state
 
@@ -142,7 +144,7 @@ auto get_max_lambda(const auto& u)
 
 ## Numerical schemes
 
-We propose to implement three different schemes for the Euler equations: Rusanov, HLL and HLLC. We describe in the following each of these schemes.
+We propose implementing three different schemes for the Euler equations: Rusanov, HLL, and HLLC. Each of these schemes is described below.
 
 ### Rusanov scheme
 
@@ -288,33 +290,50 @@ The boundary conditions are homogeneous Neumann conditions.
 
 The initial condition is provided in the `initial_condition.hpp` file.
 
-## Exercise
+## Exercises
 
-In order to implement and simulate the Euler equations in 2D using samurai, you will need to follow the steps introduced in the previous sections. We summarize them here:
+To implement and simulate the Euler equations in 2D using samurai, you will need to follow the steps introduced in the previous sections. Here is a summary:
 
 - Set the dimension of your problem
 - Create a mesh
-- Create a vector field with 4 components (density, momentum in x, momentum in y, energy)
+- Create a vector field with 4 components (density, x-momentum, y-momentum, energy)
 - Define the initial condition
 - Define the flux functions for the three schemes presented (Rusanov, HLL, HLLC)
-- Make the time loop and apply the scheme at each time step
+- Create the time loop and apply the scheme at each time step
 - Visualize the results using ParaView
 
-If everything is working correctly, you can add the adaptive mesh refinement using the multiresolution capabilities of samurai.
+If everything is working correctly, you can add adaptive mesh refinement using the multiresolution capabilities of samurai.
 
 :::{note}
 Go step by step and test each part of your code before moving to the next one. Start with a uniform mesh at level `8` for example and a simple scheme (like Rusanov) before implementing more complex schemes and adaptive refinement.
 :::
 
-### Add a new case
+```{exercise}
+Implement the 2D Riemann problem (Configuration 3) with the following steps:
+1. Create a uniform mesh at level 8 on the domain $[0, 1] \times [0, 1]$
+2. Implement the initial condition with the four states shown in the figure
+3. Implement the Rusanov scheme for the flux computation
+4. Run the simulation until $t = 0.3$ with CFL = 0.4
+5. Visualize the density field in ParaView
 
-We want now to implement a new test case: the double Mach reflection problem. This problem involves a Mach 10 shock wave reflecting off a solid wall at a 60-degree angle, creating complex shock interactions and flow features. The following figure illustrates the setup of the problem:
+Once this is working, implement the HLL and HLLC schemes and compare the results.
+```
+
+### Adding a new case
+
+We now want to implement a new test case: the double Mach reflection problem. This problem involves a Mach 10 shock wave reflecting off a solid wall at a 60-degree angle, creating complex shock interactions and flow features. The following figure illustrates the problem setup:
 
 ![Double Mach Reflection Setup](figures/double_mach_reflection_setup.svg)
 
-The default boundary conditions implemented in samurai are not sufficient for this case, so you will need to create custom boundary condition classes. Indeed, samurai provides Dirichlet, Neumann, and Periodic boundary conditions, but for this exercise, you will have to implement a new boundary condition that imposes the right ghost value.
+This problem was introduced by Woodward and Colella (1984) as a challenging test case for high-resolution shock-capturing schemes.
 
-Let's take the implementation of the Dirichlet boundary condition is samurai as an example to create your own custom boundary conditions.
+:::{note} Reference
+Woodward, P., & Colella, P. (1984). The numerical simulation of two-dimensional fluid flow with strong shocks. *Journal of Computational Physics*, 54(1), 115-173.
+:::
+
+The default boundary conditions implemented in samurai are not sufficient for this case, so you will need to create custom boundary condition classes. Samurai provides Dirichlet, Neumann, and periodic boundary conditions, but for this exercise, you will implement a new boundary condition that imposes specific values on the ghost cells.
+
+Let's use the implementation of the Dirichlet boundary condition in samurai as an example to create your own custom boundary conditions.
 
 ```cpp
 template <class Field>
@@ -344,11 +363,11 @@ struct Dirichlet
 
 :::{note}
 - The number 2 in `INIT_BC(DirichletImpl, 2)` indicates that this boundary condition uses a stencil of size 2 (one cell inside the domain and one ghost cell).
-- We remove the order parameter in the apply function for simplicity. You can find the full implementation of the Dirichlet boundary condition in samurai [here](https://github.com/hpc-maths/samurai/blob/master/include/samurai/bc/dirichlet.hpp).
+- We omit the order parameter in the apply function for simplicity. You can find the full implementation of the Dirichlet boundary condition in samurai [here](https://github.com/hpc-maths/samurai/blob/master/include/samurai/bc/dirichlet.hpp).
 :::
 
 ```{exercise}
-Implement the boundary condition that imposes a value on the ghost cells. You will call this new boundary condition `Value`.
+Implement a boundary condition that imposes specific values on the ghost cells. Call this new boundary condition `Value`.
 ```
 
 You now have all the ingredients to implement the double Mach reflection problem. Using samurai, you can select the boundary cells for each side of the domain as follows:
@@ -356,22 +375,22 @@ You now have all the ingredients to implement the double Mach reflection problem
 ```cpp
 const xt::xtensor_fixed<int, xt::xshape<dim>> bottom = {0, -1}; // Define the direction of the bottom boundary
 
-// if you want to impose a value on all the bottom boundary cells
+// If you want to impose a value on all the bottom boundary cells
 samurai::make_bc<Value>(u, rho, rhoE, momx, momy)
     ->on(bottom);
 
-// if you want to impose a value depending on the position of the cell
+// If you want to impose a value depending on the position of the cell
 samurai::make_bc<Value>(u,
                         [&](const auto& direction, const auto& cell_in, const auto& coord)
                         {
-                            // return an xt::xtensor_fixed<double, xt::xshape<dim + 2>> representing the value to impose (rho, rhoE, momx, momy)
+                            // Return an xt::xtensor_fixed<double, xt::xshape<dim + 2>> representing the value to impose (rho, rhoE, momx, momy)
                         })->on(bottom);
 ```
 
 :::{note}
-- direction is an array of integer of size dim which indicates how to go out from the `cell_in`.
-- `cell_in` is of type `samurai::Cell` and gives the characteristics of the cell inside the domain which has a boundary face.
-- `coord` is an array of double of size `dim` given the center of the boundary face.
+- `direction` is an array of integers of size `dim` that indicates the direction going out from `cell_in`.
+- `cell_in` is of type `samurai::Cell` and gives the characteristics of the cell inside the domain that has a boundary face.
+- `coord` is an array of doubles of size `dim` giving the center of the boundary face.
 :::
 
 The double Mach reflection problem requires careful implementation of boundary conditions on each side of the domain. Let's analyze what needs to be done for each boundary:
@@ -389,11 +408,11 @@ The double Mach reflection problem requires careful implementation of boundary c
   ```
 
 **Top boundary (y = 1):**
-The shock wave moves with time. At time $t$, the shock position along the top boundary is given by:
+The shock wave moves with time. At time $t$, the shock position along the top boundary is:
 $$x_1(t) = x_0 + \frac{10 t}{\sin(60°)} + \frac{1}{\tan(60°)}$$
 
-- For $x < x_1(t)$: The shock has passed, apply the post-shock state (left_state)
-- For $x \geq x_1(t)$: The shock hasn't arrived yet, apply the pre-shock state (right_state)
+- For $x < x_1(t)$: The shock has passed; apply the post-shock state (left_state)
+- For $x \geq x_1(t)$: The shock hasn't arrived yet; apply the pre-shock state (right_state)
 
 **Left boundary (x = 0):**
 This is an inflow boundary where the post-shock state enters the domain. Apply the post-shock state (left_state) on all ghost cells.
@@ -441,11 +460,21 @@ Implement the initial condition for the double Mach reflection problem.
 Run the double Mach reflection simulation using the HLLC scheme with uniform mesh at level 8. Visualize the density field at different time steps to observe the shock reflections and interactions.
 ```
 
-### Adaptation trouble
+:::{tip}
+For the double Mach reflection problem, typical simulation parameters are:
+- Domain: $[0, 4] \times [0, 1]$
+- Final time: $t = 0.2$
+- CFL: 0.4
+- Output interval: every 0.01 time units
 
-If you try to run the double Mach reflection problem with adaptive mesh refinement, you may encounter issues due to the fact that the density or the pressure fields can be negative in some regions because of the way the multi-resolution works. In fact, the detail computation used for the adaptation is based on wavelets where we compute mean values over cells. This can lead to non-physical negative values for density or pressure during refinement process where we use the prediction operator provided by samurai. This phenomenon is only visible when the stencil size of the prediction operator is greater or equal to 1 (the default is 1). If you take a prediction of order 0, you should not have this issue because you just copy the value of the parent cell into the child cells newly created.
+You should observe the formation of a complex triple-point structure where the incident shock, reflected shock, and Mach stem meet.
+:::
 
-To avoid this issue, you can give your own prediction operator that ensures positivity of density and pressure during the prediction step. The idea is to compute the new field in the child cells just created by using the default prediction operator and then check if the density and pressure are positive. If not, you just copy the field values of the parent cell into the child cells.
+### Adaptation issues
+
+If you try to run the double Mach reflection problem with adaptive mesh refinement, you may encounter issues where the density or pressure fields become negative in some regions due to how the multi-resolution algorithm works. The detail computation used for adaptation is based on wavelets, where we compute mean values over cells. This can lead to non-physical negative values for density or pressure during the refinement process when using the prediction operator provided by samurai. This phenomenon is only visible when the stencil size of the prediction operator is greater than or equal to 1 (the default is 1). If you use a prediction of order 0, you should not encounter this issue because you simply copy the value of the parent cell into the newly created child cells.
+
+To avoid this issue, you can provide your own prediction operator that ensures positivity of density and pressure during the prediction step. The idea is to compute the new field values in the newly created child cells using the default prediction operator and then check if the density and pressure are positive. If not, you simply copy the field values from the parent cell into the child cells.
 
 The prediction operator can be added during the creation of the multi-resolution object as follows:
 
@@ -488,7 +517,7 @@ samurai::prediction<pred_order, true>(dest, src)(level, i, index);
 
 **Step 2: Prepare for child cell inspection**
 
-Create the indices for the child cells (remember that when you refine, each parent cell is divided into 4 children in 2D):
+Create the indices for the child cells. Remember that when you refine a cell, each parent cell is divided into 4 children in 2D:
 
 ```cpp
 auto i_f     = i << 1;      // Double the index in x-direction
@@ -572,5 +601,5 @@ This ensures that physical quantities remain positive during the mesh refinement
 :::
 
 ```{exercise}
-Run the double Mach reflection simulation using adaptive mesh refinement with your custom prediction operator and verify that the simulation runs without issues related to negative density or pressure.
+Run the double Mach reflection simulation using adaptive mesh refinement with your custom prediction operator. Verify that the simulation runs without issues related to negative density or pressure values.
 ```

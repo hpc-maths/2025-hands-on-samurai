@@ -7,9 +7,9 @@
 - Introduce and combine a diffusion (viscous) operator
 :::
 
-In the previous practical session, we implemented a naive finite volume scheme for the inviscid Burgers equation using `for_each_interval`. We explained that this approach can be wrong when dealing with fluxes at the interfaces between different levels in a multi-resolution mesh. To address this issue, we introduced the concept of fluxes and how to handle them correctly using samurai's built-in flux mechanism. You will also see that the multi-dimensional case is handled in the same way.
+In the previous practical session, we implemented a naive finite volume scheme for the inviscid Burgers equation using `for_each_interval`. We explained that this approach can be incorrect when dealing with fluxes at the interfaces between different levels in a multi-resolution mesh. To address this issue, we introduce the concept of fluxes and how to handle them correctly using samurai's built-in flux mechanism. You will also see that the multi-dimensional case is handled in the same way.
 
-A long documentation about the flux mechanism in samurai is available at: [finite volume schemes](https://hpc-math-samurai.readthedocs.io/en/latest/reference/finite_volume_schemes.html). We will give you a short glimpse of it here.
+A comprehensive documentation about the flux mechanism in samurai is available at: [finite volume schemes](https://hpc-math-samurai.readthedocs.io/en/latest/reference/finite_volume_schemes.html). We will provide a brief overview here.
 
 samurai provides three types of schemes to handle fluxes in finite volume schemes:
 
@@ -19,15 +19,15 @@ samurai provides three types of schemes to handle fluxes in finite volume scheme
 
 Following our example of the inviscid Burgers equation, we will focus on the nonlinear scheme in this practical session.
 
-The definition of a nonlinear flux-based scheme requires defining a samurai::FluxDefinition<cfg>` where the config in our case is:
+The definition of a nonlinear flux-based scheme requires defining a `samurai::FluxDefinition<cfg>` where the config in our case is:
 
 ```cpp
 using cfg = samurai::FluxConfig<samurai::SchemeType::NonLinear, stencil_size, field_t, field_t>;
 ```
 
-We can observe that the scheme type is `NonLinear`. The `stencil_size` defines the number of neighboring cells used to compute the flux at a given cell interface. In our case, we will use a stencil size of 2, which means that the flux at the interface between cells `i` and `i+1` will be computed using the values of `u` in cells `i` and `i+1`. The output field type and input field type are both `field_t`, which is the type of the solution field `u`. It happens that the output field doesn't have the same number of components as the input field as for example for the divergence operator where the input field is a vector and the output field is a scalar.
+We can observe that the scheme type is `NonLinear`. The `stencil_size` defines the number of neighboring cells used to compute the flux at a given cell interface. In our case, we will use a stencil size of 2, which means that the flux at the interface between cells `i` and `i+1` will be computed using the values of `u` in cells `i` and `i+1`. The output field type and input field type are both `field_t`, which is the type of the solution field `u`. Note that the output field doesn't always have the same number of components as the input field. For example, in the divergence operator, the input field is a vector and the output field is a scalar.
 
-Now that the config is defined, we need to define the flux function for each Cartesian direction. In the scalar Burgers equation, the flux function is the same in each direction. Only the cells changed depending on the direction. To construct the flux in samurai, you have to build the following object:
+Now that the config is defined, we need to define the flux function for each Cartesian direction. In the scalar Burgers equation, the flux function is the same in each direction; only the cells change depending on the direction. To construct the flux in samurai, you have to build the following object:
 
 ```cpp
 samurai::FluxDefinition<cfg> burgers_flux(
@@ -42,7 +42,7 @@ scheme.set_name("upwind_flux");
 
 Let us explain the arguments of the lambda function:
 
-- `flux`: is the output flux at the interface between two cells. You have to fill this value using the values of `u`.
+- `flux`: the output flux at the interface between two cells. You need to fill this value using the values of `u`.
 - `data`: contains information about the stencil, such as the indices of the cells in the stencil.
 - `u`: contains the values of the solution field `u` in the stencil cells.
 
@@ -50,7 +50,7 @@ A figure illustrating the stencil of size 2 for a 1D flux is given below:
 
 ![](figures/cells.png)
 
-`data` will contain an array `data.cells` with two `cell` instances representing `Cell L` and `Cell R` and an attribute `data.cell_length` containing the length of the cell. `u` will contain the values of the field in these cells. `u[0]` holds the left state (u_L), `u[1]` the right state (u_R).
+`data` will contain an array `data.cells` with two `cell` instances representing `Cell L` and `Cell R`, and an attribute `data.cell_length` containing the length of the cell. `u` will contain the values of the field in these cells: `u[0]` holds the left state (u_L), and `u[1]` holds the right state (u_R).
 
 ```{exercise}
 Implement the inviscid (scalar) Burgers equation in 1D using the flux mechanism in samurai and the upwind scheme introduced in the previous part.
@@ -70,20 +70,20 @@ This is given in the skeleton code provided in `material/03-flux-burgers/main.cp
 :::
 
 ```{exercise}
-Add mesh adaptation as in the previous part to your 1D Burgers solver.
+Add mesh adaptation to your 1D Burgers solver, as in the previous part.
 ```
 
 ```{exercise}
-Switch to 2D (scalar field) and confirm that the same flux definition is reused per direction.
+Switch to 2D (scalar field) and confirm that the same flux definition is reused for each direction.
 ```
 
 ```{exercise}
-Add mesh adaptation as in the previous part to your 2D Burgers solver.
+Add mesh adaptation to your 2D Burgers solver, as in the previous part.
 ```
 
-## Write the 2D flux function as a non-conservative form
+## Write the 2D flux function in non-conservative form
 
-In samurai, you can also define fluxes for non-conservative forms. It means that you have to provide the two fluxes at each interface in each direction: the flux going from left to right and the flux going from right to left in 1d. A conservative form can be seen as a particular case where the flux going from left to right is the negative of the flux going from right to left. You can find more information about this in the [documentation of implementing a non-conservative scheme](https://hpc-math-samurai.readthedocs.io/en/latest/reference/finite_volume_schemes.html#implementing-a-non-conservative-scheme).
+In samurai, you can also define fluxes for non-conservative forms. This means you need to provide two fluxes at each interface in each direction: the flux going from left to right and the flux going from right to left in 1D. A conservative form can be seen as a particular case where the flux going from left to right is the negative of the flux going from right to left. You can find more information about this in the [documentation on implementing a non-conservative scheme](https://hpc-math-samurai.readthedocs.io/en/latest/reference/finite_volume_schemes.html#implementing-a-non-conservative-scheme).
 
 The syntax is the following:
 
@@ -98,18 +98,18 @@ my_flux[0].flux_function = [](samurai::FluxValuePair<cfg>& flux, const samurai::
 ```
 
 :::{note}
-You can observe that the name of the lambda is now `flux_function` instead of `cons_flux_function`. This function now takes a `samurai::FluxValuePair<cfg>& flux` as an argument. This object contains two values: `flux[0]` is the flux going from left to right (direction '+') and `flux[1]` is the flux going from right to left (direction '-').
+You can observe that the lambda function is now named `flux_function` instead of `cons_flux_function`. This function now takes a `samurai::FluxValuePair<cfg>& flux` as an argument. This object contains two values: `flux[0]` is the flux going from left to right (direction '+'), and `flux[1]` is the flux going from right to left (direction '-').
 :::
 
 ```{exercise}
-Rewrite your 2D scalar Burgers flux function using the non-conservative feature of samurai by replacing the `cons_flux_function` by `flux_function` and providing the two fluxes at each interface. Remember that `flux[1] = -flux[0]` in the conservative case.
+Rewrite your 2D scalar Burgers flux function using the non-conservative feature of samurai. Replace `cons_flux_function` with `flux_function` and provide the two fluxes at each interface. Remember that `flux[1] = -flux[0]` in the conservative case.
 
-You will call this new flux operator `upwind_conservative_flux`.
+Call this new flux operator `upwind_conservative_flux`.
 ```
 
-## Vector extension of viscous Burgers equation
+## Vector extension of the viscous Burgers equation
 
-We will now consider the vector extension of the Burgers equation with viscous term in its non-conservative form given by the following equation
+We will now consider the vector extension of the Burgers equation with a viscous term in its non-conservative form:
 
 $$
 \mathbf{u}_t + (\mathbf{u}\cdot\nabla)\mathbf{u} = \nu \Delta \mathbf{u}, \qquad \mathbf{u}=(u,v).
@@ -126,41 +126,41 @@ v(x,y,0) &= U_0\cos(kx) \sin(ky).
 \end{aligned}
 $$
 
-where $U_0$ is the characteristic velocity and $k$ is the wave number. This initial condition represents a periodic vortex pattern. The domain is typically taken as a square $[0, 2\pi] \times [0, 2\pi]$ with periodic boundary conditions.
+where $U_0$ is the characteristic velocity and $k$ is the wave number. This initial condition represents a periodic vortex pattern. The domain is typically taken as the square $[0, 2\pi] \times [0, 2\pi]$ with periodic boundary conditions.
 
 ```{exercise}
 - Create a multi-resolution mesh in 2D with periodic boundary conditions.
 - Create a vector field `u` with two components representing the velocity field.
-- Initialize the field `u` with the Taylor-Green vortex initial condition .
+- Initialize the field `u` with the Taylor-Green vortex initial condition.
 ```
 
 
 ### Convective operator
 
-Let's start with the convective part. The x-velocity at the interface is given by
+Let's start with the convective part. The x-velocity at the interface is given by:
 
 $$
-u_{I} = \frac{u_{L} + u_{R}}{2},
+u_{I} = \frac{u_{L} + u_{R}}{2}.
 $$
 
-The flux in the x-direction is computed using an upwind scheme. The formula for the fluxes at the interface are given by
+The flux in the x-direction is computed using an upwind scheme. The formulas for the fluxes at the interface are:
 
 $$
 F^x_{L \to R} = -u_{I} \frac{\text{sign}(u_{I}) - 1}{2} (\mathbf{u}_{R} - \mathbf{u}_{L}),
 $$
 
 $$
-F^x_{R \to L} = u_{I} \frac{\text{sign}(u_{I}) + 1}{2} (\mathbf{u}_{R} - \mathbf{u}_{L}),
+F^x_{R \to L} = u_{I} \frac{\text{sign}(u_{I}) + 1}{2} (\mathbf{u}_{R} - \mathbf{u}_{L}).
 $$
 
-```{note}
-The velocity gradient is given in the previous formulas as $(\mathbf{u}_{R} - \mathbf{u}_{L})$. We don't divide by the cell length $h$ here because samurai will take care of it.
-```
+:::{note}
+The velocity gradient in the previous formulas is given as $(\mathbf{u}_{R} - \mathbf{u}_{L})$. We don't divide by the cell length $h$ here because samurai will take care of it.
+:::
 
 ```{exercise}
-Implement the 2D vector Burgers convective flux in non-conservative form using the same approach as for the scalar case. But now, `flux[1]` is not equal to `-flux[0]`.
+Implement the 2D vector Burgers convective flux in non-conservative form using the same approach as for the scalar case. Note that now `flux[1]` is not equal to `-flux[0]`.
 
-You will call this new flux operator `upwind_non_conservative_flux`.
+Call this new flux operator `upwind_non_conservative_flux`.
 ```
 
 :::{tip}
@@ -170,7 +170,7 @@ You can use [`std::copysign`](https://en.cppreference.com/w/cpp/numeric/math/cop
 
 ### Diffusion operator
 
-Now it's time to implement the diffusion operator. We will use a linear homogeneous scheme and for that we have to create a new configuration given by:
+Now it's time to implement the diffusion operator. We will use a linear homogeneous scheme, for which we need to create a new configuration:
 
 ```cpp
 using diff_cfg = samurai::FluxConfig<samurai::SchemeType::LinearHomogeneous, stencil_size, field_t, field_t>;
@@ -178,7 +178,7 @@ using diff_cfg = samurai::FluxConfig<samurai::SchemeType::LinearHomogeneous, ste
 
 You can observe that the scheme type is now `LinearHomogeneous`.
 
-The lambda signature changes because coefficients are returned. This allows samurai to build both explicit and implicit schemes. The flux definition changes a little bit. Now, you have to define a lambda function with the following signature:
+The lambda signature changes because coefficients are returned. This allows samurai to build both explicit and implicit schemes. The flux definition changes slightly. Now, you need to define a lambda function with the following signature:
 
 ```cpp
 samurai::FluxDefinition<diff_cfg> diffusion_flux(
@@ -188,13 +188,14 @@ samurai::FluxDefinition<diff_cfg> diffusion_flux(
     });
 ```
 
-For more details about implementing a linear homogeneous scheme, you can refer to the [documentation of implementing a linear homogeneous scheme](https://hpc-math-samurai.readthedocs.io/en/latest/reference/finite_volume_schemes.html#linear-homogeneous-operators).
+For more details about implementing a linear homogeneous scheme, you can refer to the [documentation on implementing a linear homogeneous scheme](https://hpc-math-samurai.readthedocs.io/en/latest/reference/finite_volume_schemes.html#linear-homogeneous-operators).
 
-```{caution} flux definition for diffusion
-We remember that the finite volume flux for the diffusion operator is given at the interface by:
+:::{caution} Flux definition for diffusion
+Remember that the finite volume flux for the diffusion operator at the interface is:
 $$
 F(u) = \nu \frac{u_R - u_L}{h}
 $$
+:::
 
 ```{exercise}
 Implement the diffusion operator and test the Taylor-Green example with a small viscosity ($\nu = 0.001$ for example).
