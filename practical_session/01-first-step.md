@@ -8,7 +8,14 @@
 
 In this part of the practical session, we will create our first mesh using the samurai library. Then, we will create a field defined on this mesh and initialize it. We will start with a simple one-dimensional mesh and then extend our approach to two dimensions.
 
-Remember that each step in this practical session builds on the code from the previous step. If you are having trouble with a step but would like to continue, you can find the complete code in the `material` folder under the corresponding step name. Copy this code into your working directory to continue the session.
+Remember that the notion introduced in each step in this practical session can be used in the code for the next step. If you are having trouble with a step but would like to continue, you can find the complete solution in the `material` folder under the corresponding step name. For instance, `material/01-first-step/solution` gives you the entire solution for this step.
+
+```{include} start_instructions.md
+```
+
+:::{note}
+The `step_name` folder is `01-first-step`.
+:::
 
 ## Creating a 1D Mesh
 
@@ -131,7 +138,7 @@ Now, let's initialize the field with the Gaussian function. Do this by looping o
 
 To visualize a samurai field, you can save it using the built-in samurai functions to export the data in formats compatible with visualization tools like ParaView or matplotlib. Refer to [How-to: save your samurai mesh and fields](https://hpc-math-samurai.readthedocs.io/en/latest/howto/save.html) and [How-to: plot samurai fields and meshes](https://hpc-math-samurai.readthedocs.io/en/latest/howto/plot.html) for detailed instructions on saving your field data and creating plots.
 
-Since we are working with a one-dimensional field, we cannot use ParaView directly. However, we provide a Python script that allows you to visualize the data using matplotlib. This script is located in the samurai source directory, but we also include it in the `material/01-first-step` directory for your convenience. The script is named `read_mesh.py`.
+Since we are working with a one-dimensional field, we cannot use ParaView directly. However, we provide a Python script that allows you to visualize the data using matplotlib. This script is located in the samurai source directory, but we also include it in the `material/00-setup` directory for your convenience. The script is named `read_mesh.py`.
 
 Let's start by saving the mesh and the field to files that can be read by the Python script. You can use the `samurai::save` function to save both the mesh and the field.
 
@@ -141,7 +148,7 @@ Write the code to save the mesh and the field to a file named `field_1d`.
 Once you have saved the mesh and the field, you can use the provided Python script to visualize the field. Run the following command in your terminal:
 
 ```bash
-python practical_session/material/01-first-step/read_mesh.py field_1d --field u
+python practical_session/material/00-setup/outputs/read_mesh.py field_1d --field u
 ```
 
 ```{caution}

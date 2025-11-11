@@ -11,8 +11,8 @@ During this practical session, we will use the samurai library and demonstrate i
 
 Before starting, ensure you have the following installed on your system:
 - **Git** (to clone the repository)
-- **Conda** or **Miniconda** (recommended for easy setup)
-- **ParaView** (for visualization, optional but recommended)
+- **Conda**, **Miniconda** or **Micromamba** (recommended for easy setup)
+- **ParaView** (for visualization of 2D/3D results)
 
 If you prefer a manual setup without conda, you will also need:
 - A C++ compiler supporting C++20 (e.g., GCC 10+, Clang 12+)
@@ -90,8 +90,9 @@ To visualize results from 2D or 3D simulations, you will need ParaView. Download
 
 1. Open ParaView
 2. File → Open → Navigate to `practical_session/material/00-setup/outputs/2d_example.xdmf`
-3. Click **Apply** in the Properties panel
-4. You should see a 2D field visualization
+3. Select the `XDMF Reader` in the list
+4. Click **Apply** in the Properties panel
+5. You should see a 2D field visualization
 
 :::{tip}
 Always open the `.xdmf` file (not the `.h5` file) to load both mesh and field data.
@@ -114,7 +115,7 @@ python read_mesh.py 1d_example --field u
 
 :::{caution}Common issues
 - matplotlib not installed: Run conda install matplotlib or pip install matplotlib
-- No display: If running on a remote server, use --save option to save the plot instead
+- No display: If running on a remote server, use `--save filename` option to save the plot instead (the png extension is automatically added to the filename)
 :::
 
 ## Next Steps

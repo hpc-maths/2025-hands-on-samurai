@@ -12,6 +12,13 @@ $$
 \frac{\partial u}{\partial t} + \frac{1}{2} \frac{\partial u^2}{\partial x} = 0.
 $$
 
+```{include} start_instructions.md
+```
+
+:::{note}
+The `step_name` folder is `02-naive-burgers`.
+:::
+
 ## Finite volume scheme
 
 We will use the simplest finite volume scheme to solve the Burgers equation. The domain is discretized into control volumes (cells), and the solution is approximated by its average value within each cell. The update formula for the cell average $u_i$ at time step $n+1$ is given by:

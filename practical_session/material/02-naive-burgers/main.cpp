@@ -5,6 +5,7 @@
 #include <samurai/io/hdf5.hpp>
 #include <samurai/mr/mesh.hpp>
 #include <samurai/samurai.hpp>
+#include <samurai/update.hpp>
 
 int main(int argc, char* argv[])
 {
@@ -12,7 +13,7 @@ int main(int argc, char* argv[])
     using config                     = samurai::MRConfig<dim>;
     using mesh_t                     = samurai::MRMesh<config>;
 
-    samurai::initialize("samurai naive inviscid Burgers 1d", argc, argv);
+    samurai::initialize("samurai naive inviscid Burgers", argc, argv);
     SAMURAI_PARSE(argc, argv);
 
     // Mesh initialization
@@ -58,7 +59,7 @@ int main(int argc, char* argv[])
                                    });
 
         samurai::swap(u, unp1);
-        samurai::save(fmt::format("burgers_1d_{}", nt++), mesh, u);
+        samurai::save(fmt::format("burgers_{}d_{}", dim, nt++), mesh, u);
     }
     samurai::finalize();
     return 0;

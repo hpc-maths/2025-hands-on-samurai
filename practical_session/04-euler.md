@@ -9,6 +9,9 @@
 
 In this final part of the practical session, you will implement a complete compressible gas dynamics solver using the Euler equations. This builds upon everything you have learned: mesh creation, field manipulation, flux computation, and adaptive mesh refinement.
 
+```{include} start_instructions.md
+```
+
 The Euler equations describe the motion of inviscid (non-viscous) compressible fluids. They are fundamental in aerodynamics, astrophysics, and shock physics. Unlike Burgers, the Euler system couples four conservation laws (mass, momentum in x and y, energy), requiring more sophisticated numerical schemes.
 
 ## Euler equations

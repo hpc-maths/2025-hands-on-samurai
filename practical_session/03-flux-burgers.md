@@ -9,6 +9,13 @@
 
 In the previous practical session, we implemented a naive finite volume scheme for the inviscid Burgers equation using `for_each_interval`. We explained that this approach can be incorrect when dealing with fluxes at the interfaces between different levels in a multi-resolution mesh. To address this issue, we introduce the concept of fluxes and how to handle them correctly using samurai's built-in flux mechanism. You will also see that the multi-dimensional case is handled in the same way.
 
+```{include} start_instructions.md
+```
+
+:::{note}
+The `step_name` folder is `03-flux-burgers`.
+:::
+
 A comprehensive documentation about the flux mechanism in samurai is available at: [finite volume schemes](https://hpc-math-samurai.readthedocs.io/en/latest/reference/finite_volume_schemes.html). We will provide a brief overview here.
 
 samurai provides three types of schemes to handle fluxes in finite volume schemes:
