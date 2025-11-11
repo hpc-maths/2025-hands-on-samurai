@@ -124,7 +124,7 @@ $$
 
 where both sides represent the same physical interface flux, just viewed from each cell's perspective.
 
-![Flux conservation problem](figures/flux_conservation_problem.svg)(width=100%)
+![Flux conservation problem](figures/flux_conservation_problem.svg)
 
 At multi-resolution interfaces, the naive approach breaks down because it uses **ghost cells** to compute fluxes. Consider the diagram above:
 
