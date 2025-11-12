@@ -128,7 +128,7 @@ where both sides represent the same physical interface flux, just viewed from ea
 
 At multi-resolution interfaces, the naive approach breaks down because it uses **ghost cells** to compute fluxes. Consider the diagram above:
 
-- **At level $l$ (coarse):** To compute the flux $F_{i-1/2}^l$ on the right side of the real cell $u_{i-1}^l$, we need a neighbor. Since the actual neighbor consists of fine cells at level $l+1$, we create a ghost cell $u_i^l$ (shown in pink with dashed borders).
+- **At level $l$ (coarse):** To compute the flux $F_{i-1/2}^l$ on the right side of the real cell $u_{i-1}^l$, we need a neighbor. Since the actual neighbor consists of fine cells at level $l+1$, we create a ghost cell $\tilde{u}_i^l$ (shown in pink with dashed borders).
 
 - **At level $l+1$ (fine):** Similarly, to compute the flux $F_{j-1/2}^{l+1}$ on the left side of the real cell $u_{j-1}^{l+1}$, we need a neighbor. Since the actual neighbor is a coarse cell at level $l$, we create a ghost cell $\tilde{u}_{j-2}^{l+1}$.
 

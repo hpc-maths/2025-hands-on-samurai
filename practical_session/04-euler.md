@@ -340,7 +340,7 @@ Let's use the implementation of the Dirichlet boundary condition in samurai as a
 
 ```cpp
 template <class Field>
-struct DirichletImpl : public Bc<Field>
+struct DirichletImpl : public samurai::Bc<Field>
 {
     INIT_BC(DirichletImpl, 2)
 
@@ -353,7 +353,7 @@ struct DirichletImpl : public Bc<Field>
             //     cell  ghost
 
             u[cells[1]] = 2 * dirichlet_value - u[cells[0]];
-        }
+        };
     }
 };
 
