@@ -207,3 +207,16 @@ $$
 ```{exercise}
 Implement the diffusion operator and test the Taylor-Green example with a small viscosity ($\nu = 0.001$ for example).
 ```
+
+## Conclusion
+
+In this part, you have mastered samurai's flux mechanism, a powerful tool that ensures conservation at multi-resolution interfaces. You learned to:
+
+- Configure and use **nonlinear flux schemes** for conservative formulations (scalar and vector Burgers)
+- Handle **non-conservative formulations** for coupled systems
+- Implement **linear homogeneous schemes** for diffusion operators
+- Combine multiple operators (convection + diffusion) in a single solver
+
+The key advantage of samurai's flux mechanism is its **dimension-agnostic nature**: the same flux definition works seamlessly in 1D, 2D, and 3D. You can also define different fluxes by dimension if needed. You also saw how to handle both scalar and vector fields with minimal code changes.
+
+In the next part, you will apply these concepts to the **Euler equations** for compressible gas dynamics. This will require more sophisticated Riemann solvers (Rusanov, HLL, HLLC) and introduce new challenges such as custom boundary conditions and ensuring physical positivity. The flux mechanism you learned here will be the foundation for solving these complex multi-dimensional problems.

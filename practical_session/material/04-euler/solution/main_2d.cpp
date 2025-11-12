@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
         unp1.resize();
         unp1 = u - dt * fv_scheme(u);
 
-        std::swap(u.array(), unp1.array());
+        samurai::swap(u, unp1);
 
         if (t >= static_cast<double>(nsave + 1) * dt_save || t == Tf)
         {

@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
 
         unp1 = u - dt * conv_flux(u);
 
-        std::swap(u.array(), unp1.array());
+        samurai::swap(u, unp1);
         samurai::save("results", fmt::format("burgers_2d_{}", nt++), mesh, u);
     }
     samurai::finalize();

@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
                                        unp1(level, i) = u(level, i) - (dt / dx) * (flux_right - flux_left);
                                    });
 
-        std::swap(u.array(), unp1.array());
+        samurai::swap(u, unp1);
         samurai::save("results", fmt::format("burgers_1d_{}", nt++), mesh, u);
     }
     samurai::finalize();
