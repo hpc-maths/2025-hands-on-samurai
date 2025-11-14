@@ -3,10 +3,10 @@ version: 1
 project:
   title: "Hands-on samurai"
   keywords: []
-  authors: [samurai dev team]
+  authors: [samurai team]
   github: https://github.com/hpc-maths/2025-hands-on-samurai
   license:
-    code: MIT
+    code: BSD-3-Clause
     content: CC-BY-4.0
 site:
   template: book-theme

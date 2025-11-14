@@ -1,7 +1,5 @@
-// Copyright 2025 SAMURAI TEAM. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-//
+// Copyright 2025 the samurai team
+// SPDX-License-Identifier:  BSD-3-Clause
 
 #pragma once
 
@@ -57,65 +55,71 @@ class Euler_prediction_op : public samurai::field_operator_base<dim, TInterval>
         //
         samurai::prediction<pred_order, true>(dest, src)(level, i, index);
 
-        auto i_f     = i << 1;
-        i_f.step     = 2;
-        auto index_f = index << 1;
-
-        //
-        // Step 2/4 — Compute mask for negative density
-        //
-        const auto mask_rho = std::apply(
-            [&](const auto&... child)
-            {
-                return ((dest(EulerConsVar::rho, level + 1, i_f + child[0], index_f + detail::tail_as_xt(child)) < 0.0) || ...);
-            },
-            detail::cube_children<dim>());
-
-        //
-        // Step 3/4 — Compute the pressure and the mask for negative pressure
-        //
-        std::array<xt::xtensor<double, 1>, (1u << dim)> pressure;
-        pressure.fill(xt::empty<double>({i.size()}));
-
-        auto compute_pressure = [&](auto& p, const auto& child)
+        if constexpr (!std::decay_t<decltype(src)>::is_scalar)
         {
-            auto xt_child = detail::tail_as_xt(child);
-            auto rho      = dest(EulerConsVar::rho, level + 1, i_f + child[0], index_f + xt_child);
-            auto e        = xt::eval(dest(EulerConsVar::rhoE, level + 1, i_f + child[0], index_f + xt_child)
-                              / dest(EulerConsVar::rho, level + 1, i_f + child[0], index_f + xt_child));
-
-            for (std::size_t d = 0; d < dim; ++d)
+            if (src.name() == "euler")
             {
-                auto v_d = dest(EulerConsVar::mom(d), level + 1, i_f + child[0], index_f + xt_child)
-                         / dest(EulerConsVar::rho, level + 1, i_f + child[0], index_f + xt_child);
-                e -= 0.5 * v_d * v_d;
-            }
-            p = EOS::stiffened_gas::p(rho, e);
-        };
+                auto i_f     = i << 1;
+                i_f.step     = 2;
+                auto index_f = index << 1;
 
-        samurai::zip_apply(compute_pressure, pressure, detail::cube_children<dim>());
+                //
+                // Step 2/4 — Compute mask for negative density
+                //
+                const auto mask_rho = std::apply(
+                    [&](const auto&... child)
+                    {
+                        return ((dest(EulerConsVar::rho, level + 1, i_f + child[0], index_f + detail::tail_as_xt(child)) < 0.0) || ...);
+                    },
+                    detail::cube_children<dim>());
 
-        const auto mask_p = std::apply(
-            [&](auto&... p)
-            {
-                return ((p < 0.0) || ...);
-            },
-            pressure);
+                //
+                // Step 3/4 — Compute the pressure and the mask for negative pressure
+                //
+                std::array<xt::xtensor<double, 1>, (1u << dim)> pressure;
+                pressure.fill(xt::empty<double>({i.size()}));
 
-        //
-        // Step 4/4 — Apply prediction of order 0 on masked cells
-        //
-        samurai::apply_on_masked(mask_rho || mask_p,
-                                 [&](auto& ie)
-                                 {
-                                     std::apply(
-                                         [&](const auto&... child)
+                auto compute_pressure = [&](auto& p, const auto& child)
+                {
+                    auto xt_child = detail::tail_as_xt(child);
+                    auto rho      = dest(EulerConsVar::rho, level + 1, i_f + child[0], index_f + xt_child);
+                    auto e        = xt::eval(dest(EulerConsVar::rhoE, level + 1, i_f + child[0], index_f + xt_child)
+                                      / dest(EulerConsVar::rho, level + 1, i_f + child[0], index_f + xt_child));
+
+                    for (std::size_t d = 0; d < dim; ++d)
+                    {
+                        auto v_d = dest(EulerConsVar::mom(d), level + 1, i_f + child[0], index_f + xt_child)
+                                 / dest(EulerConsVar::rho, level + 1, i_f + child[0], index_f + xt_child);
+                        e -= 0.5 * v_d * v_d;
+                    }
+                    p = EOS::stiffened_gas::p(rho, e);
+                };
+
+                samurai::zip_apply(compute_pressure, pressure, detail::cube_children<dim>());
+
+                const auto mask_p = std::apply(
+                    [&](auto&... p)
+                    {
+                        return ((p < 0.0) || ...);
+                    },
+                    pressure);
+
+                //
+                // Step 4/4 — Apply prediction of order 0 on masked cells
+                //
+                samurai::apply_on_masked(mask_rho || mask_p,
+                                         [&](auto& ie)
                                          {
-                                             ((xt::view(dest(level + 1, i_f + child[0], index_f + detail::tail_as_xt(child)),
-                                                        ie) = xt::view(src(level, i, index), ie)),
-                                              ...);
-                                         },
-                                         detail::cube_children<dim>());
-                                 });
+                                             std::apply(
+                                                 [&](const auto&... child)
+                                                 {
+                                                     ((xt::view(dest(level + 1, i_f + child[0], index_f + detail::tail_as_xt(child)),
+                                                                ie) = xt::view(src(level, i, index), ie)),
+                                                      ...);
+                                                 },
+                                                 detail::cube_children<dim>());
+                                         });
+            }
+        }
     }
 };

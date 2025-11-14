@@ -1,3 +1,6 @@
+// Copyright 2025 the samurai team
+// SPDX-License-Identifier:  BSD-3-Clause
+
 #include <iostream>
 #include <samurai/bc.hpp>
 #include <samurai/box.hpp>
@@ -26,7 +29,6 @@ auto convective_flux()
         // PART TO IMPLEMENT
     };
     auto scheme = make_flux_based_scheme(burgers_flux);
-    scheme.set_name("convective_flux");
     return scheme;
 }
 

@@ -1,3 +1,9 @@
+// Copyright 2025 the samurai team
+// SPDX-License-Identifier:  BSD-3-Clause
+
+// Copyright 2025 the samurai team
+// SPDX-License-Identifier:  BSD-3-Clause
+
 #include <iostream>
 #include <numbers>
 
@@ -44,7 +50,6 @@ auto upwind_conservative_flux()
             };
         });
     auto scheme = make_flux_based_scheme(conv_flux);
-    scheme.set_name("conservative_flux");
     return scheme;
 }
 
@@ -75,8 +80,33 @@ auto upwind_non_conservative_flux()
                 flux[1] = u_mean * (std::copysign(1.0, u_mean) + 1.0) * 0.5 * (u[1] - u[0]);
             };
         });
-    auto scheme = make_flux_based_scheme(conv_flux);
-    scheme.set_name("non_conservative_flux");
+    auto scheme = samurai::make_flux_based_scheme(conv_flux);
+    return scheme;
+}
+
+template <typename field_t>
+auto diffusion_flux(double nu)
+{
+    static constexpr std::size_t stencil_size = 2;
+
+    using cfg = samurai::FluxConfig<samurai::SchemeType::LinearHomogeneous, stencil_size, field_t, field_t>;
+
+    samurai::FluxDefinition<cfg> diffusion(
+        [nu](samurai::FluxStencilCoeffs<cfg>& coeffs, double h)
+        {
+            const std::size_t left  = 0;
+            const std::size_t right = 1;
+
+            coeffs[left].fill(0);
+            coeffs[right].fill(0);
+            for (std::size_t i = 0; i < field_t::n_comp; ++i)
+            {
+                coeffs[left](i, i)  = -1 / h;
+                coeffs[right](i, i) = 1 / h;
+            }
+            coeffs *= nu;
+        });
+    auto scheme = samurai::make_flux_based_scheme(diffusion);
     return scheme;
 }
 
@@ -117,7 +147,6 @@ int main(int argc, char* argv[])
     using mesh_t                     = samurai::MRMesh<config>;
 
     auto& app = samurai::initialize("samurai viscous vector Burgers 2d", argc, argv);
-    SAMURAI_PARSE(argc, argv);
 
     auto pi = std::numbers::pi;
     samurai::Box<double, dim> box({0, 0}, {2 * pi, 2 * pi});
@@ -125,6 +154,30 @@ int main(int argc, char* argv[])
 
     std::size_t min_level = 8;
     std::size_t max_level = 8;
+
+    double Re_target       = 100.0;
+    double L               = pi; // Characteristic length scale
+    double nu              = U0 * L / Re_target;
+    double cfl             = 0.45;
+    double t               = 0.0;
+    double Tf              = 5.0;
+    std::size_t save_every = 10;
+    std::size_t nt         = 0;
+
+    app.add_option("--Re", Re_target, "Target Reynolds number")->capture_default_str()->group("Simulation parameters");
+    app.add_option("--U0", U0, "Characteristic velocity")->capture_default_str()->group("Simulation parameters");
+    app.add_option("--k", k, "Wavenumber")->capture_default_str()->group("Simulation parameters");
+    app.add_option("--cfl", cfl, "CFL number")->capture_default_str()->group("Simulation parameters");
+    app.add_option("--Tf", Tf, "Final time")->capture_default_str()->group("Simulation parameters");
+    app.add_option("--save-every", save_every, "Save every n time steps")->capture_default_str()->group("Output");
+    app.add_option("--min-level", min_level, "Minimum level of the multiresolution")->capture_default_str()->group("Multiresolution");
+    app.add_option("--max-level", max_level, "Maximum level of the multiresolution")->capture_default_str()->group("Multiresolution");
+
+    SAMURAI_PARSE(argc, argv);
+
+    std::cout << "Reynolds number: Re = " << Re_target << std::endl;
+    std::cout << "Viscosity: nu = " << nu << std::endl;
+
     mesh_t mesh{
         box,
         min_level,
@@ -145,21 +198,9 @@ int main(int argc, char* argv[])
                                u[cell][1] = -U0 * std::cos(k * x) * std::sin(k * y);
                            });
 
-    double Re_target = 1000.0;
-    double L         = pi; // Characteristic length scale
-    double nu        = U0 * L / Re_target;
-
-    std::cout << "Reynolds number: Re = " << Re_target << std::endl;
-    std::cout << "Viscosity: nu = " << nu << std::endl;
-
-    double cfl     = 0.45;
-    double t       = 0.0;
-    double Tf      = 5.0;
-    std::size_t nt = 0;
-
     auto unp1 = u; // u at the next time step
 
-    auto diff = samurai::make_diffusion_order2<decltype(u)>();
+    auto diff = diffusion_flux<decltype(u)>(nu);
     auto conv = upwind_conservative_flux<decltype(u)>();
     // auto conv = upwind_non_conservative_flux<decltype(u)>();
 
@@ -184,16 +225,16 @@ int main(int argc, char* argv[])
 
         t += dt;
 
-        if (nt % 10 == 0)
+        if (nt % save_every == 0)
         {
             std::cout << "Time step " << nt << ", t = " << t << ", dt = " << dt << std::endl;
         }
 
-        unp1 = u - dt * (conv(u) + nu * diff(u));
+        unp1 = u + dt * (nu * diff(u) - conv(u));
 
         samurai::swap(u, unp1);
 
-        if (nt % 10 == 0)
+        if (nt % save_every == 0)
         {
             samurai::save("results", fmt::format("burgers_viscous_2d_{}", nt), mesh, u);
         }

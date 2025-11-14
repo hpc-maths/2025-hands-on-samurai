@@ -1,3 +1,6 @@
+// Copyright 2025 the samurai team
+// SPDX-License-Identifier:  BSD-3-Clause
+
 #pragma once
 
 #include "schemes/hll.hpp"

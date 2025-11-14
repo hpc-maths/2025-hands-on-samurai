@@ -1,3 +1,6 @@
+// Copyright 2025 the samurai team
+// SPDX-License-Identifier:  BSD-3-Clause
+
 #include <iostream>
 #include <samurai/bc.hpp>
 #include <samurai/box.hpp>
@@ -29,7 +32,6 @@ auto upwind_flux()
         });
 
     auto scheme = make_flux_based_scheme(burgers_flux);
-    scheme.set_name("upwind_flux");
     return scheme;
 }
 

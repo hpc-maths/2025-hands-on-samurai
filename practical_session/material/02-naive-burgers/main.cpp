@@ -1,3 +1,5 @@
+// Copyright 2025 the samurai team
+// SPDX-License-Identifier:  BSD-3-Clause
 #include <iostream>
 #include <samurai/bc.hpp>
 #include <samurai/box.hpp>
