@@ -12,6 +12,10 @@ In this final part of the practical session, you will implement a complete compr
 ```{include} start_instructions.md
 ```
 
+:::{note}
+The `step_name` folder is `04-euler`. Don't forget to also copy the `euler` folder from the material directory to have access to the provided code skeleton described above.
+:::
+
 The Euler equations describe the motion of inviscid (non-viscous) compressible fluids. They are fundamental in aerodynamics, astrophysics, and shock physics. Unlike Burgers, the Euler system couples four conservation laws (mass, momentum in x and y, energy), requiring more sophisticated numerical schemes.
 
 ## Euler equations
@@ -154,7 +158,7 @@ We propose implementing three different schemes for the Euler equations: Rusanov
 The Rusanov scheme is a simple and robust approximate Riemann solver. The flux function for the Rusanov scheme can be defined as follows:
 
 ```math
-\mathbf{F}_{\text{Rusanov}}(\mathbf{u}_L, \mathbf{u}_R) = \frac{1}{2} \left( \mathbf{F}(\mathbf{u}_L) + \mathbf{F}(\mathbf{u}_R) \right) - \frac{1}{2} s_{\max} (\mathbf{u}_R - \mathbf{u}_L)
+\mathbf{F}_{\text{Rusanov}}(\mathbf{Q}_L, \mathbf{Q}_R) = \frac{1}{2} \left( \mathbf{F}(\mathbf{Q}_L) + \mathbf{F}(\mathbf{Q}_R) \right) - \frac{1}{2} s_{\max} (\mathbf{Q}_R - \mathbf{Q}_L)
 ```
 
 where $s_{\max}$ is the maximum wave speed in the direction normal to the interface.
@@ -178,10 +182,10 @@ where $c_L = \sqrt{\gamma p_L / \rho_L}$ and $c_R = \sqrt{\gamma p_R / \rho_R}$ 
 The HLL (Harten-Lax-van Leer) scheme is another approximate Riemann solver that considers only the fastest left-going and right-going waves. The flux function for the HLL scheme is given by:
 
 ```math
-\mathbf{F}_{\text{HLL}}(\mathbf{u}_L, \mathbf{u}_R) = \begin{cases}
-\mathbf{F}(\mathbf{u}_L) & \text{if } s_L \geq 0 \\\\
-\mathbf{F}(\mathbf{u}_R) & \text{if } s_R \leq 0 \\\\
-\frac{s_R \mathbf{F}(\mathbf{u}_L) - s_L \mathbf{F}(\mathbf{u}_R) + s_L s_R (\mathbf{u}_R - \mathbf{u}_L)}{s_R - s_L} & \text{otherwise}
+\mathbf{F}_{\text{HLL}}(\mathbf{Q}_L, \mathbf{Q}_R) = \begin{cases}
+\mathbf{F}(\mathbf{Q}_L) & \text{if } s_L \geq 0 \\\\
+\mathbf{F}(\mathbf{Q}_R) & \text{if } s_R \leq 0 \\\\
+\frac{s_R \mathbf{F}(\mathbf{Q}_L) - s_L \mathbf{F}(\mathbf{Q}_R) + s_L s_R (\mathbf{Q}_R - \mathbf{Q}_L)}{s_R - s_L} & \text{otherwise}
 \end{cases}
 ```
 where $s_L$ and $s_R$ are the estimated speeds of the left-going and right-going waves, respectively.
@@ -234,7 +238,7 @@ where $E_K = e_K + \frac{1}{2}(u_K^2 + v_K^2)$ is the specific total energy.
 Thus, for the x-direction flux, the star region states are given by:
 
 ```math
-\mathbf{u}_K^* = \rho_K^* \begin{pmatrix}
+\mathbf{Q}_K^* = \rho_K^* \begin{pmatrix}
 1 \\\\
 s_M \\\\ v_K \\\\
 e_K + \frac{1}{2}(u_K^2 + v_K^2) + (s_M - u_K)\left(s_M + \frac{p_K}{\rho_K(s_K - u_K)}\right)
@@ -244,7 +248,7 @@ e_K + \frac{1}{2}(u_K^2 + v_K^2) + (s_M - u_K)\left(s_M + \frac{p_K}{\rho_K(s_K 
 and for the y-direction flux, they are given by:
 
 ```math
-\mathbf{u}_K^* = \rho_K^* \begin{pmatrix}
+\mathbf{Q}_K^* = \rho_K^* \begin{pmatrix}
 1 \\\\ u_K \\\\
 s_M \\\\
 e_K + \frac{1}{2}(u_K^2 + v_K^2) + (s_M - v_K)\left(s_M + \frac{p_K}{\rho_K(s_K - v_K)}\right)
@@ -256,7 +260,7 @@ e_K + \frac{1}{2}(u_K^2 + v_K^2) + (s_M - v_K)\left(s_M + \frac{p_K}{\rho_K(s_K 
 The fluxes in the star region are computed as:
 
 ```math
-\mathbf{F}_K^* = \mathbf{F}(\mathbf{u}_K) + s_K (\mathbf{u}_K^* - \mathbf{u}_K)
+\mathbf{F}_K^* = \mathbf{F}(\mathbf{Q}_K) + s_K (\mathbf{Q}_K^* - \mathbf{Q}_K)
 ```
 
 #### Final HLLC flux
@@ -264,11 +268,11 @@ The fluxes in the star region are computed as:
 The HLLC flux is then given by:
 
 ```math
-\mathbf{F}_{\text{HLLC}}(\mathbf{u}_L, \mathbf{u}_R) = \begin{cases}
-\mathbf{F}(\mathbf{u}_L) & \text{if } s_L \geq 0 \\
+\mathbf{F}_{\text{HLLC}}(\mathbf{Q}_L, \mathbf{Q}_R) = \begin{cases}
+\mathbf{F}(\mathbf{Q}_L) & \text{if } s_L \geq 0 \\
 \mathbf{F}_L^* & \text{if } s_L < 0 \leq s_M \\
 \mathbf{F}_R^* & \text{if } s_M < 0 < s_R \\
-\mathbf{F}(\mathbf{u}_R) & \text{if } s_R \leq 0
+\mathbf{F}(\mathbf{Q}_R) & \text{if } s_R \leq 0
 \end{cases}
 ```
 
@@ -315,6 +319,7 @@ Go step by step and test each part of your code before moving to the next one. S
 Implement the 2D Riemann problem (Configuration 3) with the following steps:
 1. Create a uniform mesh at level 8 on the domain $[0, 1] \times [0, 1]$
 2. Implement the initial condition with the four states shown in the figure
+3. Implement homogeneous Neumann boundary conditions
 3. Implement the Rusanov scheme for the flux computation
 4. Run the simulation until $t = 0.3$ with CFL = 0.4
 5. Visualize the density field in ParaView

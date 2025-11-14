@@ -19,6 +19,10 @@ $$
 The `step_name` folder is `02-naive-burgers`.
 :::
 
+:::{note}
+In the provided code skeleton, we impose homogeneous Dirichlet boundary conditions ($u = 0$) at both ends of the domain. samurai provides various ways to implement boundary conditions, which we will explore in later parts.
+:::
+
 ## Finite volume scheme
 
 We will use the simplest finite volume scheme to solve the Burgers equation. The domain is discretized into control volumes (cells), and the solution is approximated by its average value within each cell. The update formula for the cell average $u_i$ at time step $n+1$ is given by:

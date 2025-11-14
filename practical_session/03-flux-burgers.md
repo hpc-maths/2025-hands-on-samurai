@@ -44,7 +44,6 @@ samurai::FluxDefinition<cfg> burgers_flux(
         });
 
 auto scheme = make_flux_based_scheme(burgers_flux);
-scheme.set_name("upwind_flux");
 ```
 
 Let us explain the arguments of the lambda function:
@@ -82,11 +81,35 @@ Add mesh adaptation to your 1D Burgers solver, as in the previous part.
 
 ```{exercise}
 Switch to 2D (scalar field) and confirm that the same flux definition is reused for each direction.
+
+:::{attention}
+The box and the initial condition must be upgraded to 2D as well.
+:::
 ```
 
 ```{exercise}
 Add mesh adaptation to your 2D Burgers solver, as in the previous part.
 ```
+
+:::{exercise}
+Previously, the same flux is used in 1D and 2D, which means that the flux doesn't depend on the direction. This is why we set the lambda function for the flux definition only once in the constructor. However, in general, the fluxes can differ across dimensions. To do that, we create a `samurai::FluxDefinition<cfg>` without parameters in the constructor and then set the flux function for each dimension separately:
+
+```cpp
+samurai::FluxDefinition<cfg> my_flux;
+
+my_flux[0].cons_flux_function = [](samurai::FluxValue<cfg>& flux, const samurai::StencilData<cfg>& data, const samurai::StencilValues<cfg>& u)
+                           {
+                               // flux in x-direction
+                           };
+my_flux[1].cons_flux_function = [](samurai::FluxValue<cfg>& flux, const samurai::StencilData<cfg>& data, const samurai::StencilValues<cfg>& u)
+                           {
+                               // flux in y-direction
+                           };
+
+```
+
+Modify your implementation to create different flux functions for each dimension (x and y), even though they will be identical for this particular problem.
+:::
 
 ## Write the 2D flux function in non-conservative form
 
@@ -114,6 +137,10 @@ Rewrite your 2D scalar Burgers flux function using the non-conservative feature 
 Call this new flux operator `upwind_conservative_flux`.
 ```
 
+:::{attention}
+We now have a vector field with two components (u,v).
+:::
+
 ## Vector extension of the viscous Burgers equation
 
 We will now consider the vector extension of the Burgers equation with a viscous term in its non-conservative form:
@@ -134,6 +161,17 @@ v(x,y,0) &= U_0\cos(kx) \sin(ky).
 $$
 
 where $U_0$ is the characteristic velocity and $k$ is the wave number. This initial condition represents a periodic vortex pattern. The domain is typically taken as the square $[0, 2\pi] \times [0, 2\pi]$ with periodic boundary conditions.
+
+```{note}
+The default parameter values are:
+- $U_0 = 1.0$
+- $k = 1.0$
+- $CFL = 0.4$
+- $T_{\text{final}} = 5$
+- $Re = 100$
+- characteristic length $L = \pi$
+- $\nu = \frac{U_0 L}{Re}$
+```
 
 ```{exercise}
 - Create a multi-resolution mesh in 2D with periodic boundary conditions.
