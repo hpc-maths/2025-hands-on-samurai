@@ -119,10 +119,8 @@ However, this naive implementation has several issues. Most notably, we do not c
 In a proper finite volume scheme, conservation requires that the flux leaving one cell exactly equals the flux entering its neighbor. This ensures that mass (or any conserved quantity) is neither created nor destroyed at cell interfaces. Mathematically, for two adjacent cells sharing an interface, the flux balance must satisfy:
 
 $$
-\Delta x \cdot F_{\text{left}} = \Delta x \cdot F_{\text{right}}
+F_{\text{left}} = - F_{\text{right}}.
 $$
-
-where both sides represent the same physical interface flux, just viewed from each cell's perspective.
 
 ![Flux conservation problem](figures/flux_conservation_problem.svg)
 
@@ -132,17 +130,7 @@ At multi-resolution interfaces, the naive approach breaks down because it uses *
 
 - **At level $l+1$ (fine):** Similarly, to compute the flux $F_{j-1/2}^{l+1}$ on the left side of the real cell $u_{j-1}^{l+1}$, we need a neighbor. Since the actual neighbor is a coarse cell at level $l$, we create a ghost cell $\tilde{u}_{j-2}^{l+1}$.
 
-The problem is that **these two fluxes are computed at the same physical interface** (shown by the red vertical line), but using different cell sizes and different ghost values:
-
-$$
-\Delta x_l \cdot F(u_{i-1}^l) \neq \Delta x_{l+1} \cdot F(\tilde{u}_{j-2}^{l+1})
-$$
-
-Even accounting for the size ratio ($\Delta x_l = 2\Delta x_{l+1}$), we still have:
-
-$$
-2\Delta x_{l+1} \cdot F(u_{i-1}^l) \neq \Delta x_{l+1} \cdot F(\tilde{u}_{j-2}^{l+1})
-$$
+The problem is that **these two fluxes are computed at the same physical interface** (shown by the red vertical line), but using different cell and ghost values.
 
 The ghost values are constructed differently on each side, leading to inconsistent flux evaluations. This **breaks conservation** and can cause numerical errors, spurious oscillations, or even instabilities.
 
