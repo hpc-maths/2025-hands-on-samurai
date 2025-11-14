@@ -17,11 +17,11 @@ domain_width = 4.0
 domain_height = 1.0
 
 # Draw domain
-ax.add_patch(
-    Rectangle(
-        (0, 0), domain_width, domain_height, fill=False, edgecolor="black", linewidth=2
-    )
-)
+# ax.add_patch(
+#     Rectangle(
+#         (0, 0), domain_width, domain_height, fill=False, edgecolor="black", linewidth=2
+#     )
+# )
 
 # Shock angle: 60 degrees from horizontal (pi/3 from code)
 shock_angle = np.pi / 3  # 60 degrees in radians
@@ -43,6 +43,25 @@ shock_line = ax.plot(
     label="Initial shock position",
 )
 
+# Draw BC
+x1 = x_shock_init + 1 / np.tan(shock_angle)
+ax.plot(
+    [0, x1],
+    [domain_height, domain_height],
+    "r-",
+    linewidth=2,
+)  # Top
+ax.plot(
+    [x1, domain_width],
+    [domain_height, domain_height],
+    "b-",
+    linewidth=2,
+)  # Top
+ax.plot([domain_width, domain_width], [0, domain_height], "g-", linewidth=2)  # Right
+ax.plot([0, 0], [0, domain_height], "r-", linewidth=2)  # Left
+ax.plot([0, x_shock_init], [0, 0], "r-", linewidth=2)  # Bottom
+ax.plot([x_shock_init, domain_width], [0, 0], "k-", linewidth=2)  # Bottom
+
 # Add arrow to show shock direction
 arrow_start_x = x_shock_init + 0.5 * np.cos(shock_angle)
 arrow_start_y = 0.5 * np.sin(shock_angle)
@@ -62,13 +81,14 @@ ax.arrow(
 )
 
 # Draw reflecting wall (from x=0 to x=2/3)
-wall_end = 2.0 / 3.0
-ax.plot([0, wall_end], [0, 0], "k-", linewidth=5, label="Reflecting wall")
+wall_start = 2.0 / 3.0
+wall_end = 4.0
+ax.plot([wall_start, wall_end], [0, 0], "k-", linewidth=5)
 
 # Add hatching below the wall to show it's solid
 hatch_depth = -0.1
 ax.fill_between(
-    [0, wall_end],
+    [wall_start, wall_end],
     [0, 0],
     [hatch_depth, hatch_depth],
     hatch="///",
@@ -106,7 +126,7 @@ ax.text(
 
 # Post-shock state (left of shock, above wall)
 # From code: rho=8, p=116.5, v=(8.25*sin(60°), -8.25*cos(60°))
-post_shock_x = 0.4
+post_shock_x = 0.5
 post_shock_y = 0.75
 ax.text(
     post_shock_x,
@@ -166,15 +186,15 @@ ax.text(x_shock_init, -0.15, r"$x = 2/3$", fontsize=10, ha="center")
 
 # Boundary condition labels
 # Top boundary
-ax.text(
-    domain_width / 2,
-    domain_height + 0.12,
-    "Inflow (post-shock)",
-    fontsize=10,
-    ha="center",
-    style="italic",
-    bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgreen", alpha=0.6),
-)
+# ax.text(
+#     domain_width / 2,
+#     domain_height + 0.12,
+#     "Inflow (post-shock)",
+#     fontsize=10,
+#     ha="center",
+#     style="italic",
+#     bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgreen", alpha=0.6),
+# )
 
 # Right boundary
 ax.text(
@@ -190,8 +210,8 @@ ax.text(
 
 # Bottom boundary (right of wall)
 ax.text(
-    (wall_end + domain_width) / 2,
-    -0.1,
+    (wall_start + domain_width) / 2,
+    0.1,
     "Reflecting wall",
     fontsize=10,
     ha="center",

@@ -171,6 +171,8 @@ s_{\max} = \max(|v_L| + c_L, |v_R| + c_R)
 $$
 :::
 
+where $c_L = \sqrt{\gamma p_L / \rho_L}$ and $c_R = \sqrt{\gamma p_R / \rho_R}$ are the sound speeds on the left and right states.
+
 ### HLL scheme
 
 The HLL (Harten-Lax-van Leer) scheme is another approximate Riemann solver that considers only the fastest left-going and right-going waves. The flux function for the HLL scheme is given by:
@@ -191,8 +193,6 @@ s_L = \min(u_L - c_L, u_R - c_R)
 ```math
 s_R = \max(u_L + c_L, u_R + c_R)
 ```
-
-where $c_L = \sqrt{\gamma p_L / \rho_L}$ and $c_R = \sqrt{\gamma p_R / \rho_R}$ are the sound speeds on the left and right states.
 
 :::{note}
 For the y-direction flux, replace $u$ with $v$ in the wave speed estimates:

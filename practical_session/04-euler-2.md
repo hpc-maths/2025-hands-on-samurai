@@ -23,15 +23,42 @@ This problem was introduced by Woodward and Colella (1984) as a challenging test
 Woodward, P., & Colella, P. (1984). The numerical simulation of two-dimensional fluid flow with strong shocks. *Journal of Computational Physics*, 54(1), 115-173.
 :::
 
+### Initial shock geometry
+
+The initial condition for the double Mach reflection problem divides the domain into two regions separated by the initial shock line. The shock starts at position $(x_0, 0) = (2/3, 0)$ and extends at a 60-degree angle.
+
+The shock line is defined by the equation:
+$$x < x_0 + \frac{y}{\tan(60°)}$$
+
+- **Left of the shock line** (post-shock region): Apply the post-shock state with:
+  - $\rho = 8.0$
+  - $p = 116.5$
+  - $\mathbf{v} = (8.25 \sin 60°, -8.25 \cos 60°)$
+
+- **Right of the shock line** (pre-shock region): Apply the pre-shock state with:
+  - $\rho = 1.4$
+  - $p = 1.0$
+  - $\mathbf{v} = (0, 0)$
+
+:::{tip}
+To implement this condition, you can iterate over each cell and check if the cell center $(x, y)$ satisfies the condition $x < x_0 + y/\tan(\alpha)$ where $\alpha = 60° = \pi/3$. Remember to convert the primitive variables $(\rho, p, \mathbf{v})$ to conservative variables $(\rho, \rho E, \rho u, \rho v)$ using the `prim2cons` function provided in the code.
+:::
+
+```{exercise}
+Implement the initial condition for the double Mach reflection problem on a domain $[0, 4] \times [0, 1]$ and visualize the density field.
+```
+
+### Boundary conditions
+
 The default boundary conditions implemented in samurai are not sufficient for this case, so you will need to create custom boundary condition classes. Samurai provides Dirichlet, Neumann, and periodic boundary conditions, but for this exercise, you will implement a new boundary condition that imposes specific values on the ghost cells.
 
 Let's use the implementation of the Dirichlet boundary condition in samurai as an example to create your own custom boundary conditions.
 
 ```cpp
 template <class Field>
-struct DirichletImpl : public samurai::Bc<Field>
+struct Dirichlet : public samurai::Bc<Field>
 {
-    INIT_BC(DirichletImpl, 2)
+    INIT_BC(Dirichlet, 2)
 
     apply_function_t get_apply_function(constant_stencil_size_t, const direction_t&) const override
     {
@@ -45,16 +72,10 @@ struct DirichletImpl : public samurai::Bc<Field>
         };
     }
 };
-
-struct Dirichlet
-{
-    template <class Field>
-    using impl_t = DirichletImpl<Field>;
-};
 ```
 
 :::{note}
-- The number 2 in `INIT_BC(DirichletImpl, 2)` indicates that this boundary condition uses a stencil of size 2 (one cell inside the domain and one ghost cell).
+- The number 2 in `INIT_BC(Dirichlet, 2)` indicates that this boundary condition uses a stencil of size 2 (one cell inside the domain and one ghost cell).
 - We omit the order parameter in the apply function for simplicity. You can find the full implementation of the Dirichlet boundary condition in samurai [here](https://github.com/hpc-maths/samurai/blob/master/include/samurai/bc/dirichlet.hpp).
 :::
 
@@ -123,38 +144,12 @@ You can use the `cell.center(0)` and `cell.center(1)` methods to access the x an
 Implement the boundary conditions required for the double Mach reflection problem.
 ```
 
-The initial condition for the double Mach reflection problem divides the domain into two regions separated by the initial shock line. The shock starts at position $(x_0, 0) = (2/3, 0)$ and extends at a 60-degree angle.
-
-**Initial shock geometry:**
-
-The shock line is defined by the equation:
-$$x < x_0 + \frac{y}{\tan(60°)}$$
-
-- **Left of the shock line** (post-shock region): Apply the post-shock state with:
-  - $\rho = 8.0$
-  - $p = 116.5$
-  - $\mathbf{v} = (8.25 \sin 60°, -8.25 \cos 60°)$
-
-- **Right of the shock line** (pre-shock region): Apply the pre-shock state with:
-  - $\rho = 1.4$
-  - $p = 1.0$
-  - $\mathbf{v} = (0, 0)$
-
-:::{tip}
-To implement this condition, you can iterate over each cell and check if the cell center $(x, y)$ satisfies the condition $x < x_0 + y/\tan(\alpha)$ where $\alpha = 60° = \pi/3$. Remember to convert the primitive variables $(\rho, p, \mathbf{v})$ to conservative variables $(\rho, \rho E, \rho u, \rho v)$ using the `prim2cons` function provided in the code.
-:::
-
-```{exercise}
-Implement the initial condition for the double Mach reflection problem.
-```
-
 ```{exercise}
 Run the double Mach reflection simulation using the HLLC scheme with uniform mesh at level 8. Visualize the density field at different time steps to observe the shock reflections and interactions.
 ```
 
 :::{tip}
 For the double Mach reflection problem, typical simulation parameters are:
-- Domain: $[0, 4] \times [0, 1]$
 - Final time: $t = 0.2$
 - CFL: 0.4
 - Output interval: every 0.01 time units
