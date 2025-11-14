@@ -295,31 +295,3 @@ This ensures that physical quantities remain positive during the mesh refinement
 ```{exercise}
 Run the double Mach reflection simulation using adaptive mesh refinement with your custom prediction operator. Verify that the simulation runs without issues related to negative density or pressure values.
 ```
-
-## Conclusion
-
-Congratulations! You have successfully tackled one of the most challenging benchmark problems in computational fluid dynamics: the double Mach reflection. This achievement demonstrates your mastery of advanced numerical techniques and samurai's flexible framework.
-
-In this part, you learned to:
-
-- **Design custom boundary conditions** tailored to specific physical configurations (reflecting walls, moving shocks, inflow/outflow)
-- **Handle complex spatial and temporal dependencies** in boundary conditions (position-dependent values, time-evolving shock positions)
-- **Develop robust prediction operators** that preserve physical constraints (positivity of density and pressure) during mesh adaptation
-- **Combine all samurai capabilities** in a realistic, production-level simulation
-
-The double Mach reflection problem showcases the intricate physics of shock interactions: the formation of the triple point where the incident shock, reflected shock, and Mach stem meet; the complex vortical structures that emerge; and the challenge of maintaining numerical stability in regions with extreme gradients.
-
-Your custom prediction operator addresses a critical issue in adaptive methods: ensuring that mathematical operations (like wavelet-based refinement) don't violate physical constraints. This is a practical example of how numerical methods must be carefully designed to respect the underlying physics.
-
-### What You Have Accomplished
-
-Through this entire training session (Parts 0-4), you have progressed from basic mesh creation to solving cutting-edge shock physics problems:
-
-- **Part 1**: Created adaptive meshes and understood samurai's interval-based representation
-- **Part 2**: Implemented a naive scheme and discovered conservation issues at multi-resolution interfaces
-- **Part 3**: Mastered samurai's flux mechanism to ensure proper conservation
-- **Part 4**: Applied everything to the Euler equations, from simple Riemann problems to complex shock reflections
-
-You now possess the skills to tackle real-world compressible flow problems using adaptive mesh refinement. Whether in aerospace engineering, astrophysics, or shock physics research, the techniques you've learned with samurai provide a powerful foundation for efficient, accurate simulations.
-
-The journey doesn't end here—explore more complex geometries, 3D problems, or even extend samurai to new physical systems. The framework you've mastered is designed to grow with your ambitions!
