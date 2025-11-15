@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
     auto fv_scheme = get_fv_scheme<decltype(u)>(scheme);
 
     auto MRadaptation = samurai::make_MRAdapt(u);
-    auto mra_config   = samurai::mra_config().epsilon(samurai::args::epsilon).relative_detail(true);
+    auto mra_config   = samurai::mra_config().relative_detail(true);
 
     while (t != Tf)
     {

@@ -7,6 +7,7 @@ endif()
 
 find_package(samurai REQUIRED)
 
-add_executable(euler main.cpp)
-target_link_libraries(euler PRIVATE samurai::samurai)
+add_executable(euler_2d main_2d.cpp)
+target_link_libraries(euler_2d PRIVATE samurai::samurai)
+
 

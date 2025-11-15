@@ -156,9 +156,9 @@ For the double Mach reflection problem, typical simulation parameters are:
 You should observe the formation of a complex triple-point structure where the incident shock, reflected shock, and Mach stem meet.
 :::
 
-## Adaptation issues
+## Adaptation issue
 
-Let's go back to the 1D case implemented earlier. We'll discuss an issue that may arise during the adaptive mesh refinement process. In the case of Euler equations, when using adaptive mesh refinement, maintaining physical validity (i.e., positive density and pressure) can be challenging. If you're not expecting it, it can be confusing. To illustrate this, we'll drive the adaptation using a field other than the conservative variables. This is the first time in this practical session that we discuss this possibility. It's easy to do with samurai. Here's how:
+To illustrate this point, we will use a 1D case implemented in the solution directory under the name `main_1d.cpp`. This example is a double rarefaction problem. We'll discuss an issue that may arise during the adaptive mesh refinement process. In the case of Euler equations, when using adaptive mesh refinement, maintaining physical validity (i.e., positive density and pressure) can be challenging. If you're not expecting it, it can be confusing. To illustrate this, we'll drive the adaptation using a field other than the conservative variables. This is the first time in this practical session that we discuss this possibility. It's easy to do with samurai. Here's how:
 
 ```cpp
 auto MRadaptation = samurai::make_MRAdapt(other_field);
@@ -169,6 +169,7 @@ MRadaptation(mra_config, conserved_variables);
 In this example, the mesh adaptation is driven by `other_field`, but the conservative variables are also updated accordingly during the adaptation process. You can add as many fields as you want to the adaptation step. Be sure to put `mra_config` as the first argument of the adaptation function.
 
 :::{exercise}
+- Copy the `main_1d.cpp` file from the solution directory to your working directory.
 - Create a new field to store the pressure values computed from the conservative variables.
 - Use this pressure field to drive the mesh adaptation instead of the conservative variables.
 - Add the conservative variables in the adaptation step to ensure they are updated accordingly.
