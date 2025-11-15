@@ -79,7 +79,7 @@ struct Dirichlet : public samurai::Bc<Field>
 :::
 
 ```{exercise}
-Implement a boundary condition that imposes specific values on the ghost cells. Call this new boundary condition `Value`.
+Implement a boundary condition that imposes specific values on the ghost cells. Call this new boundary condition `Imposed`.
 ```
 
 You now have all the ingredients to implement the double Mach reflection problem. Using samurai, you can select the boundary cells for each side of the domain as follows:
@@ -88,11 +88,11 @@ You now have all the ingredients to implement the double Mach reflection problem
 const xt::xtensor_fixed<int, xt::xshape<dim>> bottom = {0, -1}; // Define the direction of the bottom boundary
 
 // If you want to impose a value on all the bottom boundary cells
-samurai::make_bc<Value>(u, rho, rhoE, momx, momy)
+samurai::make_bc<Imposed>(u, rho, rhoE, momx, momy)
     ->on(bottom);
 
 // If you want to impose a value depending on the position of the cell
-samurai::make_bc<Value>(u,
+samurai::make_bc<Imposed>(u,
                         [&](const auto& direction, const auto& cell_in, const auto& coord)
                         {
                             // Return an xt::xtensor_fixed<double, xt::xshape<dim + 2>> representing the value to impose (rho, rhoE, momx, momy)
@@ -126,6 +126,21 @@ $$x_1(t) = x_0 + \frac{10 t}{\sin(60°)} + \frac{1}{\tan(60°)}$$
 - For $x < x_1(t)$: The shock has passed; apply the post-shock state (left_state).
 - For $x \geq x_1(t)$: The shock hasn't arrived yet; apply the pre-shock state (right_state).
 
+:::{tip}
+If you want the lambda function take into account the evolution of time, you have to capture the time variable by reference in the lambda function. Therefore, if you create a dedicated function for the top boundary condition, it should look like this:
+
+```cpp
+void top_bc(auto& conserved_variables, double &time)
+{
+    [&](const auto& direction, const auto& cell_in, const auto& coord)
+    {
+        // Use 'time' to compute the shock position and determine which state to apply
+        // We capture everything by reference including time to get its updated value
+    }
+}
+```
+
+:::
 **Left boundary (x = 0):**
 This is an inflow boundary where the post-shock state enters the domain. Apply the post-shock state (left_state) on all ghost cells.
 

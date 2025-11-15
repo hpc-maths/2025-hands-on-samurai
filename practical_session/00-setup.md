@@ -114,7 +114,7 @@ python read_mesh.py 1d_example --field u
 **Expected output:** A matplotlib window should appear showing a 1D plot of the field `u`.
 
 :::{caution}Common issues
-- matplotlib not installed: Run conda install matplotlib or pip install matplotlib
+- matplotlib not installed: Run `conda install matplotlib` or `pip install matplotlib`
 - No display: If running on a remote server, use `--save filename` option to save the plot instead (the png extension is automatically added to the filename)
 :::
 

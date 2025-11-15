@@ -47,6 +47,10 @@ python /path/to/read_mesh.py burgers_1d_ --field u --start 0 --end 340 --wait 10
 ```
 ````
 
+```{tip}
+When using a time-stepping scheme, first compute $u^{n+1}$ from $u^n$, then set $u^n \\leftarrow u^{n+1}$ for the next iteration. There are several ways to implement this in C++. A simple approach is to use two separate fields for the current and next states (as in the code skeleton), then swap them with `samurai::swap`, which is an efficient operation.
+```
+
 ## Mesh adaptation
 
 It is time to adapt the mesh according to the solution. We will use the multi-resolution capabilities of samurai to do so. We will not go into the theoretical details of multi-resolution here, but you can refer to [Thomas Bellotti's thesis](https://hal.science/tel-04266822v1) in chapter 2 for more information.
