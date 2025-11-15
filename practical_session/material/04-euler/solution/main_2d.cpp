@@ -133,13 +133,8 @@ int main(int argc, char* argv[])
     mesh_t mesh;
     auto u = samurai::make_vector_field<double, 2 + dim>("euler", mesh);
 
-    auto prediction_fn = [&](auto& new_field, const auto& old_field)
-    {
-        return make_field_operator_function<Euler_prediction_op>(new_field, old_field);
-    };
-
-    auto MRadaptation = samurai::make_MRAdapt(prediction_fn, u);
-    auto mra_config   = samurai::mra_config().epsilon(samurai::args::epsilon).relative_detail(true);
+    auto MRadaptation = samurai::make_MRAdapt(u);
+    auto mra_config   = samurai::mra_config().relative_detail(true);
 
     if (restart_file.empty())
     {
