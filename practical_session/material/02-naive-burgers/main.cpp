@@ -7,7 +7,6 @@
 #include <samurai/io/hdf5.hpp>
 #include <samurai/mr/mesh.hpp>
 #include <samurai/samurai.hpp>
-#include <samurai/update.hpp>
 
 int main(int argc, char* argv[])
 {
@@ -50,8 +49,6 @@ int main(int argc, char* argv[])
     {
         t += dt;
         std::cout << "Time step " << nt << ", t = " << t << std::endl;
-
-        samurai::update_ghost_mr(u);
 
         samurai::for_each_interval(mesh,
                                    [&](std::size_t level, const auto& i, const auto&)
